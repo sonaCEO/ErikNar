@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Protocol
 
 from eriknar.catalog.enums import AvailabilityStatus
@@ -23,17 +24,21 @@ class CatalogReader(Protocol):
     async def list_published(self) -> list[Product]: ...
 
 
-def _media_view(media: ProductMedia) -> MediaView:
+def _default_media_url(bucket: str, object_key: str) -> str:
+    return f"/{bucket}/{object_key}"
+
+
+def _media_view(media: ProductMedia, media_url: Callable[[str, str], str]) -> MediaView:
     return MediaView(
         id=media.id,
-        url=f"/{media.bucket}/{media.object_key}",
+        url=media_url(media.bucket, media.object_key),
         alt_text=media.alt_text,
         sort_order=media.sort_order,
         is_primary=media.is_primary,
     )
 
 
-def _variant_view(variant: ProductVariant) -> VariantView:
+def _variant_view(variant: ProductVariant, media_url: Callable[[str, str], str]) -> VariantView:
     return VariantView(
         id=variant.id,
         sku=variant.sku,
@@ -46,21 +51,27 @@ def _variant_view(variant: ProductVariant) -> VariantView:
         panel_color=ColorView.model_validate(variant.panel_color),
         control_type=ControlTypeView.model_validate(variant.control_type),
         media=[
-            _media_view(item) for item in sorted(variant.media, key=lambda item: item.sort_order)
+            _media_view(item, media_url)
+            for item in sorted(variant.media, key=lambda item: item.sort_order)
         ],
     )
 
 
 class CatalogService:
-    def __init__(self, repository: CatalogReader) -> None:
+    def __init__(
+        self,
+        repository: CatalogReader,
+        media_url: Callable[[str, str], str] = _default_media_url,
+    ) -> None:
         self._repository = repository
+        self._media_url = media_url
 
     async def get_product(self, slug: str) -> ProductDetail:
         product = await self._repository.get_published_by_slug(slug)
         if product is None:
             raise ProductNotFoundError(slug)
         variants = [
-            _variant_view(variant)
+            _variant_view(variant, self._media_url)
             for variant in product.variants
             if variant.is_active and variant.availability_status is not AvailabilityStatus.HIDDEN
         ]
@@ -98,7 +109,9 @@ class CatalogService:
                     short_description=product.short_description,
                     min_price_minor=min(prices) if prices else None,
                     currency=variants[0].currency if variants else "RUB",
-                    primary_image_url=_media_view(primary).url if primary else None,
+                    primary_image_url=(
+                        _media_view(primary, self._media_url).url if primary else None
+                    ),
                 )
             )
         return summaries

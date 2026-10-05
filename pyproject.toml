@@ -5,7 +5,9 @@ description = "Backend API and Telegram integration for ErikNar"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "alembic>=1.14,<2",
+  "anyio>=4.8,<5",
   "fastapi>=0.115,<1",
+  "minio>=7.2,<8",
   "psycopg[binary]>=3.2,<4",
   "pydantic-settings>=2.7,<3",
   "sqlalchemy[asyncio]>=2.0.37,<3",

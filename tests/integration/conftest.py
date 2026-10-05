@@ -1,6 +1,9 @@
+import os
 import shutil
 import socket
 import subprocess
+import time
+import urllib.request
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -63,3 +66,62 @@ def postgres_url(tmp_path: Path) -> Iterator[str]:
             capture_output=True,
             text=True,
         )
+
+
+@pytest.fixture
+def minio_server(tmp_path: Path) -> Iterator[dict[str, object]]:
+    executable = shutil.which("minio")
+    if executable is None:
+        pytest.fail("MinIO binary is required for integration tests")
+
+    api_port = _unused_tcp_port()
+    console_port = _unused_tcp_port()
+    access_key = "integration-user"
+    secret_key = "integration-secret"
+    log_file = (tmp_path / "minio.log").open("wb")
+    process = subprocess.Popen(
+        [
+            executable,
+            "server",
+            str(tmp_path / "minio-data"),
+            "--address",
+            f"127.0.0.1:{api_port}",
+            "--console-address",
+            f"127.0.0.1:{console_port}",
+        ],
+        env={
+            **os.environ,
+            "MINIO_ROOT_USER": access_key,
+            "MINIO_ROOT_PASSWORD": secret_key,
+        },
+        stdout=log_file,
+        stderr=subprocess.STDOUT,
+    )
+    health_url = f"http://127.0.0.1:{api_port}/minio/health/live"
+    for _ in range(100):
+        if process.poll() is not None:
+            log_file.close()
+            pytest.fail((tmp_path / "minio.log").read_text())
+        try:
+            with urllib.request.urlopen(health_url, timeout=0.2) as response:
+                if response.status == 200:
+                    break
+        except OSError:
+            time.sleep(0.1)
+    else:
+        process.terminate()
+        process.wait(timeout=5)
+        log_file.close()
+        pytest.fail("MinIO did not become healthy")
+
+    try:
+        yield {
+            "endpoint": f"127.0.0.1:{api_port}",
+            "access_key": access_key,
+            "secret_key": secret_key,
+            "public_base_url": f"http://127.0.0.1:{api_port}",
+        }
+    finally:
+        process.terminate()
+        process.wait(timeout=5)
+        log_file.close()

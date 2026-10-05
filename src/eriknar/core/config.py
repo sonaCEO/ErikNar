@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     minio_access_key: str = "eriknar"
     minio_secret_key: str = "change-me"
     minio_bucket: str = "product-media"
+    minio_secure: bool = False
+    media_public_base_url: str = "http://localhost:9000"
+    media_max_size_bytes: int = 10 * 1024 * 1024
     telegram_bot_token: str | None = None
     telegram_manager_chat_id: int | None = None
 
