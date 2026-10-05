@@ -1,4 +1,4 @@
 [tools]
 python = "3.12"
 uv = "0.12.23"
-
+postgres = "16.15"

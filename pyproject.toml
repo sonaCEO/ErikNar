@@ -4,8 +4,11 @@ version = "0.1.0"
 description = "Backend API and Telegram integration for ErikNar"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "alembic>=1.14,<2",
   "fastapi>=0.115,<1",
+  "psycopg[binary]>=3.2,<4",
   "pydantic-settings>=2.7,<3",
+  "sqlalchemy[asyncio]>=2.0.37,<3",
   "uvicorn[standard]>=0.34,<1",
 ]
 
@@ -43,4 +46,3 @@ packages = ["eriknar"]
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 disallow_untyped_defs = true
-
