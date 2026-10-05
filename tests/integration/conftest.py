@@ -7,11 +7,6 @@ from pathlib import Path
 import pytest
 
 
-@pytest.fixture
-def anyio_backend() -> str:
-    return "asyncio"
-
-
 def _unused_tcp_port() -> int:
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))

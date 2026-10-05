@@ -5,8 +5,11 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from eriknar.catalog import models as catalog_models
 from eriknar.core.config import get_settings
 from eriknar.db.base import Base
+
+_ = catalog_models
 
 config = context.config
 if config.config_file_name is not None:
@@ -53,4 +56,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

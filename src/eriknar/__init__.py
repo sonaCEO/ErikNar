@@ -1,2 +1,1 @@
 """ErikNar backend application."""
-

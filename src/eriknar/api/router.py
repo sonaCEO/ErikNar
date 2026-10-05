@@ -14,4 +14,3 @@ router = APIRouter(prefix="/api/v1")
 @router.get("/health", response_model=HealthResponse, tags=["system"])
 async def health() -> HealthResponse:
     return HealthResponse(status="ok")
-
