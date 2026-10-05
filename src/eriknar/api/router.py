@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from eriknar.catalog.api import router as catalog_router
+from eriknar.leads.api import router as leads_router
 
 
 class HealthResponse(BaseModel):
@@ -12,6 +13,7 @@ class HealthResponse(BaseModel):
 
 router = APIRouter(prefix="/api/v1")
 router.include_router(catalog_router)
+router.include_router(leads_router)
 
 
 @router.get("/health", response_model=HealthResponse, tags=["system"])

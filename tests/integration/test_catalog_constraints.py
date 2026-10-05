@@ -134,7 +134,7 @@ async def test_database_rejects_duplicate_variant_configuration(
 
 
 @pytest.mark.anyio
-async def test_catalog_migration_downgrade_removes_custom_enum(
+async def test_migration_downgrade_removes_custom_enums(
     migrated_postgres_url: str,
 ) -> None:
     subprocess.run(
@@ -146,9 +146,12 @@ async def test_catalog_migration_downgrade_removes_custom_enum(
     )
     engine = create_async_engine(migrated_postgres_url)
     async with engine.connect() as connection:
-        enum_count = await connection.scalar(
-            text("SELECT count(*) FROM pg_type WHERE typname = 'availability_status'")
+        remaining_enums = await connection.scalars(
+            text(
+                "SELECT typname FROM pg_type WHERE typname IN "
+                "('availability_status', 'lead_source', 'lead_status', 'outbox_status')"
+            )
         )
 
-    assert enum_count == 0
+    assert list(remaining_enums) == []
     await engine.dispose()

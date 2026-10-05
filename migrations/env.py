@@ -7,9 +7,12 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from eriknar.catalog import models as catalog_models
 from eriknar.core.config import get_settings
+from eriknar.customers import models as customer_models
 from eriknar.db.base import Base
+from eriknar.leads import models as lead_models
+from eriknar.outbox import models as outbox_models
 
-_ = catalog_models
+_ = catalog_models, customer_models, lead_models, outbox_models
 
 config = context.config
 if config.config_file_name is not None:
