@@ -6,6 +6,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from eriknar.catalog.admin_service import (
+    AdminCatalogNotFoundError,
+    CatalogConflictError,
+    ConcurrentUpdateError,
+)
 from eriknar.catalog.service import ProductNotFoundError
 from eriknar.leads.service import (
     IdempotencyConflictError,
@@ -81,6 +86,25 @@ def install_exception_handlers(app: FastAPI) -> None:
             error=ErrorDetail(code="product_not_found", message="Товар не найден")
         )
         return JSONResponse(status_code=404, content=payload.model_dump(mode="json"))
+
+    @app.exception_handler(AdminCatalogNotFoundError)
+    async def admin_catalog_not_found_handler(
+        request: Request, exc: AdminCatalogNotFoundError
+    ) -> JSONResponse:
+        del request, exc
+        return error(404, "admin_catalog_not_found", "Запись каталога не найдена")
+
+    @app.exception_handler(ConcurrentUpdateError)
+    async def concurrent_update_handler(
+        request: Request, exc: ConcurrentUpdateError
+    ) -> JSONResponse:
+        del request, exc
+        return error(409, "concurrent_update", "Запись уже изменена")
+
+    @app.exception_handler(CatalogConflictError)
+    async def catalog_conflict_handler(request: Request, exc: CatalogConflictError) -> JSONResponse:
+        del request, exc
+        return error(409, "catalog_conflict", "Конфликт данных каталога")
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +15,7 @@ from eriknar.catalog.admin_schemas import (
     CreatePanelColorCommand,
     CreateProductCommand,
     CreateVariantCommand,
+    ProductPage,
     ReferenceView,
     UpdateProductCommand,
     UpdateVariantCommand,
@@ -42,6 +43,27 @@ class AdminCatalogService:
         product = Product(**command.model_dump())
         await self._add(product)
         return AdminProductView.model_validate(product)
+
+    async def get_product(self, product_id: UUID) -> AdminProductView:
+        product = await self._session.get(Product, product_id)
+        if product is None:
+            raise AdminCatalogNotFoundError(product_id)
+        return AdminProductView.model_validate(product)
+
+    async def list_products(self, page: int, page_size: int) -> ProductPage:
+        total = await self._session.scalar(select(func.count()).select_from(Product))
+        products = await self._session.scalars(
+            select(Product)
+            .order_by(Product.sort_order, Product.name, Product.id)
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
+        return ProductPage(
+            items=[AdminProductView.model_validate(item) for item in products],
+            page=page,
+            page_size=page_size,
+            total=total or 0,
+        )
 
     async def update_product(
         self, product_id: UUID, command: UpdateProductCommand

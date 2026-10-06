@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from eriknar.catalog.admin_api import router as admin_catalog_router
 from eriknar.catalog.api import router as catalog_router
 from eriknar.core.config import get_settings
 from eriknar.db.session import engine
@@ -51,6 +52,7 @@ async def get_readiness() -> dict[str, object]:
 
 
 router = APIRouter(prefix="/api/v1")
+router.include_router(admin_catalog_router)
 router.include_router(catalog_router)
 router.include_router(leads_router)
 router.include_router(users_router)

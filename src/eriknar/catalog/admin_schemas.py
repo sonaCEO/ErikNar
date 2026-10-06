@@ -44,6 +44,17 @@ class AdminProductView(CreateProductCommand):
     updated_at: datetime
 
 
+class ProductPage(BaseModel):
+    items: list[AdminProductView]
+    page: int
+    page_size: int
+    total: int
+
+
+class ArchiveProductCommand(BaseModel):
+    expected_updated_at: datetime
+
+
 class CreateBodyColorCommand(BaseModel):
     slug: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=120)
