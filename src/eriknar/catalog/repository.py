@@ -36,7 +36,7 @@ class CatalogRepository:
         statement = (
             select(Product)
             .where(Product.is_published.is_(True), Product.archived_at.is_(None))
-            .order_by(Product.name)
+            .order_by(Product.sort_order, Product.name, Product.id)
             .options(*_catalog_load_options())
         )
         return list((await self._session.scalars(statement)).unique())

@@ -87,7 +87,11 @@ class CatalogService:
         variants = [
             _variant_view(variant, product.media, self._media_url)
             for variant in product.variants
-            if variant.is_active and variant.availability_status is not AvailabilityStatus.HIDDEN
+            if variant.is_active
+            and variant.body_color.is_active is not False
+            and variant.panel_color.is_active is not False
+            and variant.control_type.is_active is not False
+            and variant.availability_status is not AvailabilityStatus.HIDDEN
         ]
         return ProductDetail(
             id=product.id,
@@ -110,6 +114,9 @@ class CatalogService:
                 variant
                 for variant in product.variants
                 if variant.is_active
+                and variant.body_color.is_active is not False
+                and variant.panel_color.is_active is not False
+                and variant.control_type.is_active is not False
                 and variant.availability_status is not AvailabilityStatus.HIDDEN
             ]
             prices = [variant.price_minor for variant in variants]
