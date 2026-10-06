@@ -207,3 +207,4 @@ async def test_internal_error_does_not_expose_database_details() -> None:
         }
     }
     assert "secret" not in response.text
+    assert response.headers["X-Request-ID"]

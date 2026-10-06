@@ -20,6 +20,7 @@ class OutboxRepository:
         event = await self._session.scalar(
             select(OutboxEvent)
             .where(
+                OutboxEvent.requires_review.is_(False),
                 or_(
                     (
                         (OutboxEvent.status == OutboxStatus.PENDING)

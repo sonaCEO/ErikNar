@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 import pytest
 from sqlalchemy import select
@@ -49,7 +50,7 @@ async def test_temporary_failure_schedules_bounded_retry(migrated_postgres_url: 
 
 
 class TopicPersistenceFailureProcessor(OutboxProcessor):
-    async def _save_topic(self, lead_id: object, topic_id: int) -> None:
+    async def _save_topic(self, event_id: UUID, lead_id: UUID, topic_id: int) -> None:
         raise RuntimeError("database commit failed after Telegram success")
 
 

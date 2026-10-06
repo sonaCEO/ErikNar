@@ -46,11 +46,30 @@ class OutboxProcessor:
                 raise LookupError("lead not found")
             return lead
 
-    async def _save_topic(self, lead_id: UUID, topic_id: int) -> None:
+    async def _begin_external_operation(self, event_id: UUID) -> None:
+        async with self._session_factory() as session, session.begin():
+            event = await session.get(OutboxEvent, event_id, with_for_update=True)
+            if event is None:
+                raise LookupError("outbox event not found")
+            event.requires_review = True
+            event.last_error = "external operation outcome requires reconciliation"
+
+    async def _clear_external_operation(self, event_id: UUID) -> None:
+        async with self._session_factory() as session, session.begin():
+            event = await session.get(OutboxEvent, event_id, with_for_update=True)
+            if event is not None:
+                event.requires_review = False
+
+    async def _save_topic(self, event_id: UUID, lead_id: UUID, topic_id: int) -> None:
         async with self._session_factory() as session, session.begin():
             lead = await session.get(Lead, lead_id, with_for_update=True)
+            event = await session.get(OutboxEvent, event_id, with_for_update=True)
+            if lead is None or event is None:
+                raise LookupError("delivery state not found")
             if lead is not None and lead.telegram_topic_id is None:
                 lead.telegram_topic_id = topic_id
+            event.requires_review = False
+            event.last_error = None
 
     async def _complete(self, event_id: UUID, lead_id: UUID, message_id: int) -> None:
         async with self._session_factory() as session, session.begin():
@@ -61,6 +80,7 @@ class OutboxProcessor:
             if lead.telegram_message_id is None:
                 lead.telegram_message_id = message_id
             event.status = OutboxStatus.COMPLETED
+            event.requires_review = False
             event.processing_started_at = None
             event.completed_at = datetime.now(UTC)
             event.last_error = None
@@ -99,11 +119,14 @@ class OutboxProcessor:
         try:
             lead = await self._load_lead(event_id)
             if lead.telegram_topic_id is None:
-                topic_id = await self._gateway.create_forum_topic(
-                    f"Заявка {lead.public_id}"
-                )
+                await self._begin_external_operation(event_id)
                 try:
-                    await self._save_topic(lead.id, topic_id)
+                    topic_id = await self._gateway.create_forum_topic(f"Заявка {lead.public_id}")
+                except Exception as exc:
+                    await self._clear_external_operation(event_id)
+                    raise exc
+                try:
+                    await self._save_topic(event_id, lead.id, topic_id)
                 except Exception as exc:
                     await self._fail(event_id, exc, requires_review=True)
                     return True
@@ -116,11 +139,16 @@ class OutboxProcessor:
                     snapshot=lead.snapshot,
                     comment=lead.comment,
                 )
-                message_id = await self._gateway.send_lead_card(
-                    lead.telegram_topic_id,
-                    text,
-                    f"lead:claim:{lead.id}",
-                )
+                await self._begin_external_operation(event_id)
+                try:
+                    message_id = await self._gateway.send_lead_card(
+                        lead.telegram_topic_id,
+                        text,
+                        f"lead:claim:{lead.id}",
+                    )
+                except Exception as exc:
+                    await self._clear_external_operation(event_id)
+                    raise exc
                 try:
                     await self._complete(event_id, lead.id, message_id)
                 except Exception as exc:
