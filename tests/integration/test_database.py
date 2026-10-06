@@ -1,3 +1,5 @@
+import os
+import subprocess
 from datetime import datetime
 from uuid import UUID
 
@@ -34,3 +36,16 @@ async def test_database_uses_utc_and_uuid(postgres_url: str) -> None:
     assert probe.updated_at.tzinfo is not None
 
     await engine.dispose()
+
+
+def test_alembic_schema_matches_models(migrated_postgres_url: str) -> None:
+    result = subprocess.run(
+        ["uv", "run", "alembic", "check"],
+        check=False,
+        env={**os.environ, "ERIKNAR_DATABASE_URL": migrated_postgres_url},
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "No new upgrade operations detected" in result.stdout
