@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Backend API and Telegram integration for ErikNar"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "aiogram>=3.17,<4",
   "alembic>=1.14,<2",
   "anyio>=4.8,<5",
   "fastapi>=0.115,<1",

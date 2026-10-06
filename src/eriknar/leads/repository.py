@@ -35,6 +35,9 @@ class LeadRepository:
     async def get_by_idempotency_key(self, key: str) -> Lead | None:
         return await self._session.scalar(select(Lead).where(Lead.idempotency_key == key))
 
+    async def get_for_update(self, lead_id: UUID) -> Lead | None:
+        return await self._session.scalar(select(Lead).where(Lead.id == lead_id).with_for_update())
+
     async def get_customer_by_phone(self, normalized_phone: str) -> Customer | None:
         return await self._session.scalar(
             select(Customer).where(Customer.phone_normalized == normalized_phone)

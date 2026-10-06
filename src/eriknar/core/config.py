@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     media_max_size_bytes: int = 10 * 1024 * 1024
     telegram_bot_token: str | None = None
     telegram_manager_chat_id: int | None = None
+    telegram_outbox_poll_seconds: float = 1.0
+    telegram_outbox_max_attempts: int = 8
 
 
 @lru_cache

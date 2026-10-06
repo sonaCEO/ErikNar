@@ -1,6 +1,8 @@
 import hashlib
 import json
 import re
+from datetime import UTC, datetime
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +13,9 @@ from eriknar.leads.enums import LeadStatus
 from eriknar.leads.models import Lead
 from eriknar.leads.repository import LeadRepository
 from eriknar.leads.schemas import (
+    ClaimResult,
     CreateLeadCommand,
+    LeadActionResult,
     LeadResult,
     LeadSnapshot,
     SnapshotValue,
@@ -29,6 +33,14 @@ class IdempotencyConflictError(ValueError):
 
 
 class InvalidPhoneError(ValueError):
+    pass
+
+
+class LeadNotFoundError(ValueError):
+    pass
+
+
+class InvalidLeadTransitionError(ValueError):
     pass
 
 
@@ -140,3 +152,38 @@ class LeadService:
             )
 
         return _result(lead, created=True)
+
+    async def claim(self, lead_id: UUID, user_id: UUID) -> ClaimResult:
+        async with self._session.begin():
+            lead = await self._leads.get_for_update(lead_id)
+            if lead is None:
+                raise LeadNotFoundError(lead_id)
+            if lead.assigned_to_user_id is not None:
+                return ClaimResult(
+                    claimed=False,
+                    assigned_to_user_id=lead.assigned_to_user_id,
+                    status=lead.status,
+                )
+            if lead.status != LeadStatus.NEW:
+                raise ValueError(f"lead cannot be claimed from status {lead.status}")
+            lead.assigned_to_user_id = user_id
+            lead.assigned_at = datetime.now(UTC)
+            lead.status = LeadStatus.IN_PROGRESS
+        return ClaimResult(
+            claimed=True,
+            assigned_to_user_id=user_id,
+            status=LeadStatus.IN_PROGRESS,
+        )
+
+    async def resolve(self, lead_id: UUID, user_id: UUID, target: LeadStatus) -> LeadActionResult:
+        if target not in {LeadStatus.COMPLETED, LeadStatus.REJECTED}:
+            raise InvalidLeadTransitionError(target)
+        async with self._session.begin():
+            lead = await self._leads.get_for_update(lead_id)
+            if lead is None:
+                raise LeadNotFoundError(lead_id)
+            if lead.status != LeadStatus.IN_PROGRESS or lead.assigned_to_user_id != user_id:
+                raise InvalidLeadTransitionError(lead_id)
+            lead.status = target
+            lead.closed_at = datetime.now(UTC)
+        return LeadActionResult(assigned_to_user_id=user_id, status=target)

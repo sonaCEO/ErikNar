@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Enum, ForeignKey, String, Text, Uuid
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, String, Text, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,6 +10,7 @@ from eriknar.customers.models import Customer
 from eriknar.db.base import Base
 from eriknar.db.types import TimestampMixin, UUIDPrimaryKeyMixin
 from eriknar.leads.enums import LeadSource, LeadStatus
+from eriknar.users.models import User
 
 
 class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -40,7 +41,12 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     comment: Mapped[str] = mapped_column(Text, default="", server_default="")
     idempotency_key: Mapped[str] = mapped_column(String(128), unique=True, index=True)
     request_hash: Mapped[str] = mapped_column(String(64))
-    closed_at: Mapped[datetime | None]
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    assigned_to_user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    assigned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    telegram_topic_id: Mapped[int | None] = mapped_column(BigInteger)
+    telegram_message_id: Mapped[int | None] = mapped_column(BigInteger)
 
     customer: Mapped[Customer] = relationship()
     variant: Mapped[ProductVariant] = relationship()
+    assigned_to: Mapped[User | None] = relationship()

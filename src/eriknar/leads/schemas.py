@@ -54,3 +54,14 @@ class CreateLeadRequest(BaseModel):
 class CreateLeadResponse(BaseModel):
     public_id: UUID
     status: LeadStatus
+
+
+class ClaimResult(BaseModel):
+    claimed: bool
+    assigned_to_user_id: UUID
+    status: LeadStatus
+
+
+class LeadActionResult(BaseModel):
+    assigned_to_user_id: UUID
+    status: LeadStatus

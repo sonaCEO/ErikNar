@@ -57,8 +57,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("attempt_count", sa.Integer(), server_default="0", nullable=False),
-        sa.Column("next_attempt_at", sa.DateTime(), nullable=True),
-        sa.Column("completed_at", sa.DateTime(), nullable=True),
+        sa.Column("processing_started_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("next_attempt_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("last_error", sa.Text(), nullable=True),
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column(
@@ -95,7 +96,7 @@ def upgrade() -> None:
         sa.Column("comment", sa.Text(), server_default="", nullable=False),
         sa.Column("idempotency_key", sa.String(length=128), nullable=False),
         sa.Column("request_hash", sa.String(length=64), nullable=False),
-        sa.Column("closed_at", sa.DateTime(), nullable=True),
+        sa.Column("closed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column(
             "created_at",
