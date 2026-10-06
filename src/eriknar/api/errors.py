@@ -12,6 +12,13 @@ from eriknar.leads.service import (
     InvalidPhoneError,
     VariantUnavailableError,
 )
+from eriknar.users.dependencies import AuthenticationError, PermissionDeniedError
+from eriknar.users.service import (
+    EmployeeNotFoundError,
+    InvalidCredentialsError,
+    LoginConflictError,
+    LoginRateLimitedError,
+)
 
 
 class ErrorDetail(BaseModel):
@@ -25,6 +32,46 @@ class ErrorResponse(BaseModel):
 
 
 def install_exception_handlers(app: FastAPI) -> None:
+    def error(status_code: int, code: str, message: str) -> JSONResponse:
+        payload = ErrorResponse(error=ErrorDetail(code=code, message=message))
+        return JSONResponse(status_code=status_code, content=payload.model_dump(mode="json"))
+
+    @app.exception_handler(InvalidCredentialsError)
+    async def invalid_credentials_handler(
+        request: Request, exc: InvalidCredentialsError
+    ) -> JSONResponse:
+        del request, exc
+        return error(401, "invalid_credentials", "Неверный логин или пароль")
+
+    @app.exception_handler(AuthenticationError)
+    async def authentication_handler(request: Request, exc: AuthenticationError) -> JSONResponse:
+        del request, exc
+        return error(401, "invalid_access_token", "Требуется повторный вход")
+
+    @app.exception_handler(PermissionDeniedError)
+    async def permission_handler(request: Request, exc: PermissionDeniedError) -> JSONResponse:
+        del request, exc
+        return error(403, "forbidden", "Недостаточно прав")
+
+    @app.exception_handler(LoginRateLimitedError)
+    async def login_rate_limited_handler(
+        request: Request, exc: LoginRateLimitedError
+    ) -> JSONResponse:
+        del request, exc
+        return error(429, "login_rate_limited", "Слишком много попыток входа")
+
+    @app.exception_handler(LoginConflictError)
+    async def login_conflict_handler(request: Request, exc: LoginConflictError) -> JSONResponse:
+        del request, exc
+        return error(409, "login_conflict", "Этот логин уже используется")
+
+    @app.exception_handler(EmployeeNotFoundError)
+    async def employee_not_found_handler(
+        request: Request, exc: EmployeeNotFoundError
+    ) -> JSONResponse:
+        del request, exc
+        return error(404, "employee_not_found", "Сотрудник не найден")
+
     @app.exception_handler(ProductNotFoundError)
     async def product_not_found_handler(
         request: Request, exc: ProductNotFoundError

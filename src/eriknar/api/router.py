@@ -10,6 +10,7 @@ from eriknar.catalog.api import router as catalog_router
 from eriknar.core.config import get_settings
 from eriknar.db.session import engine
 from eriknar.leads.api import router as leads_router
+from eriknar.users.api import router as users_router
 
 
 class HealthResponse(BaseModel):
@@ -52,6 +53,7 @@ async def get_readiness() -> dict[str, object]:
 router = APIRouter(prefix="/api/v1")
 router.include_router(catalog_router)
 router.include_router(leads_router)
+router.include_router(users_router)
 
 
 @router.get("/health", response_model=HealthResponse, tags=["system"])
