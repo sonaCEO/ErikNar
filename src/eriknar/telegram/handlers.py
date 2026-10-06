@@ -28,9 +28,15 @@ class ManagerActionService:
             service = LeadService(session)
             if action == "claim":
                 result = await service.claim(lead_id, user.id)
+                async with self._session_factory() as lookup_session:
+                    assignee = await UserRepository(lookup_session).get_by_id(
+                        result.assigned_to_user_id
+                    )
                 return LeadActionResult(
                     assigned_to_user_id=result.assigned_to_user_id,
+                    assigned_to_name=assignee.name if assignee else None,
                     status=result.status,
+                    claimed=result.claimed,
                 )
             targets = {
                 "complete": LeadStatus.COMPLETED,
@@ -52,7 +58,18 @@ def build_router(session_factory: async_sessionmaker[AsyncSession]) -> Router:
         try:
             _, action, raw_lead_id = callback.data.split(":", maxsplit=2)
             result = await actions.perform(action, UUID(raw_lead_id), callback.from_user.id)
-            await callback.answer(f"Статус: {result.status.value}")
+            if result.claimed is False:
+                await callback.answer(
+                    "Заявка уже закреплена за другой сотрудницей", show_alert=True
+                )
+            elif result.claimed is True:
+                await callback.answer("Заявка закреплена за вами")
+                if callback.message is not None:
+                    await callback.message.answer(
+                        f"Ответственная: {result.assigned_to_name or callback.from_user.full_name}"
+                    )
+            else:
+                await callback.answer(f"Статус: {result.status.value}")
         except UnauthorizedManagerError:
             await callback.answer("Нет доступа", show_alert=True)
         except (ValueError, TypeError):

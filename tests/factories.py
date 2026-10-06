@@ -58,6 +58,8 @@ async def seed_lead_with_event(
             variant=variant,
             source=LeadSource.WEBSITE,
             status=LeadStatus.NEW,
+            customer_name="Анна",
+            customer_phone="+7 999 000-00-00",
             snapshot={
                 "product_id": str(UUID(int=3)),
                 "product_name": "Лесенка",

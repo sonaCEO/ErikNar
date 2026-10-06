@@ -38,7 +38,21 @@ def _media_view(media: ProductMedia, media_url: Callable[[str, str], str]) -> Me
     )
 
 
-def _variant_view(variant: ProductVariant, media_url: Callable[[str, str], str]) -> VariantView:
+def _variant_view(
+    variant: ProductVariant,
+    product_media: list[ProductMedia],
+    media_url: Callable[[str, str], str],
+) -> VariantView:
+    body_color_id = variant.body_color_id or variant.body_color.id
+    applicable = {
+        item.id: item
+        for item in [*product_media, *variant.media]
+        if item.variant_id == variant.id
+        or (
+            item.variant_id is None
+            and (item.body_color_id is None or item.body_color_id == body_color_id)
+        )
+    }
     return VariantView(
         id=variant.id,
         sku=variant.sku,
@@ -52,7 +66,7 @@ def _variant_view(variant: ProductVariant, media_url: Callable[[str, str], str])
         control_type=ControlTypeView.model_validate(variant.control_type),
         media=[
             _media_view(item, media_url)
-            for item in sorted(variant.media, key=lambda item: item.sort_order)
+            for item in sorted(applicable.values(), key=lambda item: item.sort_order)
         ],
     )
 
@@ -71,7 +85,7 @@ class CatalogService:
         if product is None:
             raise ProductNotFoundError(slug)
         variants = [
-            _variant_view(variant, self._media_url)
+            _variant_view(variant, product.media, self._media_url)
             for variant in product.variants
             if variant.is_active and variant.availability_status is not AvailabilityStatus.HIDDEN
         ]

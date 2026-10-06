@@ -12,6 +12,13 @@ REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 
 
 def install_request_logging(app: FastAPI) -> None:
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
     @app.middleware("http")
     async def request_logging(request: Request, call_next: RequestResponseEndpoint) -> Response:
         supplied = request.headers.get("X-Request-ID", "")

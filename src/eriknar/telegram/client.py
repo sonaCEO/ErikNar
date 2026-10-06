@@ -2,6 +2,7 @@ from typing import Protocol
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramNetworkError, TelegramRetryAfter, TelegramServerError
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
@@ -11,13 +12,20 @@ class TelegramGateway(Protocol):
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int: ...
 
 
+class TransientTelegramError(ConnectionError):
+    pass
+
+
 class AiogramTelegramGateway:
     def __init__(self, bot: Bot, manager_chat_id: int) -> None:
         self._bot = bot
         self._manager_chat_id = manager_chat_id
 
     async def create_forum_topic(self, name: str) -> int:
-        topic = await self._bot.create_forum_topic(chat_id=self._manager_chat_id, name=name)
+        try:
+            topic = await self._bot.create_forum_topic(chat_id=self._manager_chat_id, name=name)
+        except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
+            raise TransientTelegramError(str(exc)) from exc
         return topic.message_thread_id
 
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int:
@@ -33,11 +41,14 @@ class AiogramTelegramGateway:
                 ],
             ]
         )
-        message = await self._bot.send_message(
-            chat_id=self._manager_chat_id,
-            message_thread_id=topic_id,
-            text=text,
-            parse_mode=ParseMode.HTML,
-            reply_markup=keyboard,
-        )
+        try:
+            message = await self._bot.send_message(
+                chat_id=self._manager_chat_id,
+                message_thread_id=topic_id,
+                text=text,
+                parse_mode=ParseMode.HTML,
+                reply_markup=keyboard,
+            )
+        except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
+            raise TransientTelegramError(str(exc)) from exc
         return message.message_id

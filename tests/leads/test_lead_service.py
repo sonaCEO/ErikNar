@@ -196,3 +196,47 @@ async def test_concurrent_same_idempotency_key_creates_one_lead(
         assert await verification_session.scalar(select(func.count()).select_from(Lead)) == 1
         assert await verification_session.scalar(select(func.count()).select_from(OutboxEvent)) == 1
     await engine.dispose()
+
+
+@pytest.mark.anyio
+async def test_concurrent_distinct_leads_share_one_new_customer(
+    migrated_postgres_url: str,
+) -> None:
+    setup_session, engine = await _session(migrated_postgres_url)
+    async with setup_session:
+        variant = await _seed_variant(setup_session, AvailabilityStatus.IN_STOCK)
+
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    async with factory() as first_session, factory() as second_session:
+        first, second = await asyncio.gather(
+            LeadService(first_session).create(_command(variant.id), "distinct-request-1"),
+            LeadService(second_session).create(
+                _command(variant.id, comment="Вторая заявка"), "distinct-request-2"
+            ),
+        )
+
+    async with factory() as session:
+        assert first.public_id != second.public_id
+        assert await session.scalar(select(func.count()).select_from(Lead)) == 2
+        from eriknar.customers.models import Customer
+
+        assert await session.scalar(select(func.count()).select_from(Customer)) == 1
+    await engine.dispose()
+
+
+@pytest.mark.anyio
+async def test_lead_preserves_submitted_name_for_existing_phone(
+    migrated_postgres_url: str,
+) -> None:
+    session, engine = await _session(migrated_postgres_url)
+    async with session:
+        variant = await _seed_variant(session, AvailabilityStatus.IN_STOCK)
+        await LeadService(session).create(_command(variant.id), "first-name")
+        renamed = _command(variant.id)
+        renamed.customer_name = "Анна Петрова"
+        result = await LeadService(session).create(renamed, "second-name")
+        lead = await session.scalar(select(Lead).where(Lead.public_id == result.public_id))
+        assert lead is not None
+        assert lead.customer_name == "Анна Петрова"
+        assert lead.customer_phone == "8 (999) 000-00-00"
+    await engine.dispose()

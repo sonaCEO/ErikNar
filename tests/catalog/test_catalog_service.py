@@ -4,7 +4,14 @@ import pytest
 from pydantic import ValidationError
 
 from eriknar.catalog.enums import AvailabilityStatus
-from eriknar.catalog.models import BodyColor, ControlType, PanelColor, Product, ProductVariant
+from eriknar.catalog.models import (
+    BodyColor,
+    ControlType,
+    PanelColor,
+    Product,
+    ProductMedia,
+    ProductVariant,
+)
 from eriknar.catalog.schemas import VariantData
 from eriknar.catalog.service import CatalogService
 
@@ -118,3 +125,80 @@ async def test_product_detail_exposes_only_active_visible_variants() -> None:
     detail = await CatalogService(CatalogRepositoryStub(product)).get_product("lesenka")
 
     assert [variant.sku for variant in detail.variants] == ["VISIBLE"]
+
+
+@pytest.mark.anyio
+async def test_variant_gallery_includes_product_color_and_variant_media() -> None:
+    body = BodyColor(id=uuid4(), slug="black", name="Чёрный", hex_value="#202020")
+    product = Product(
+        id=uuid4(),
+        slug="media",
+        name="Модель",
+        model_code="M",
+        category="heated_towel_rail",
+        short_description="Описание",
+        description="Текст",
+        max_temperature=60,
+        heater_type="Сухой ТЭН",
+        warranty_months=24,
+        is_published=True,
+    )
+    variant = ProductVariant(
+        id=uuid4(),
+        sku="MEDIA",
+        width_mm=500,
+        height_mm=800,
+        body_color=body,
+        panel_color=PanelColor(id=uuid4(), slug="white", name="Белая"),
+        control_type=ControlType(id=uuid4(), slug="touch", name="Сенсорная", description=""),
+        price_minor=1_000_000,
+        currency="RUB",
+        availability_status=AvailabilityStatus.IN_STOCK,
+        is_active=True,
+    )
+    product.variants = [variant]
+    product.media = [
+        ProductMedia(
+            id=uuid4(),
+            product=product,
+            bucket="media",
+            object_key="product.webp",
+            mime_type="image/webp",
+            size_bytes=1,
+            alt_text="Общее",
+            sort_order=1,
+            is_primary=True,
+        ),
+        ProductMedia(
+            id=uuid4(),
+            product=product,
+            body_color_id=body.id,
+            bucket="media",
+            object_key="color.webp",
+            mime_type="image/webp",
+            size_bytes=1,
+            alt_text="Цвет",
+            sort_order=2,
+            is_primary=False,
+        ),
+        ProductMedia(
+            id=uuid4(),
+            product=product,
+            variant_id=variant.id,
+            bucket="media",
+            object_key="variant.webp",
+            mime_type="image/webp",
+            size_bytes=1,
+            alt_text="Вариант",
+            sort_order=3,
+            is_primary=False,
+        ),
+    ]
+
+    detail = await CatalogService(CatalogRepositoryStub(product)).get_product("media")
+
+    assert [item.url for item in detail.variants[0].media] == [
+        "/media/product.webp",
+        "/media/color.webp",
+        "/media/variant.webp",
+    ]

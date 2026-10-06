@@ -33,7 +33,7 @@ async def test_temporary_failure_schedules_bounded_retry(migrated_postgres_url: 
     _, event_id = await seed_lead_with_event(factory, idempotency_key="retry")
 
     before = datetime.now(UTC)
-    processor = OutboxProcessor(factory, TemporarilyFailingGateway(), max_attempts=5)
+    processor = OutboxProcessor(factory, TemporarilyFailingGateway(), max_attempts=1)
     assert await processor.run_once() is True
 
     async with factory() as session:
@@ -45,6 +45,31 @@ async def test_temporary_failure_schedules_bounded_retry(migrated_postgres_url: 
         assert before < event.next_attempt_at
         assert (event.next_attempt_at - before).total_seconds() <= 60
         assert "Telegram unavailable" in (event.last_error or "")
+    await engine.dispose()
+
+
+class TopicPersistenceFailureProcessor(OutboxProcessor):
+    async def _save_topic(self, lead_id: object, topic_id: int) -> None:
+        raise RuntimeError("database commit failed after Telegram success")
+
+
+@pytest.mark.anyio
+async def test_uncertain_external_success_requires_manual_review(
+    migrated_postgres_url: str,
+) -> None:
+    engine = create_async_engine(migrated_postgres_url)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    _, event_id = await seed_lead_with_event(factory, idempotency_key="uncertain")
+
+    processor = TopicPersistenceFailureProcessor(factory, WorkingGateway())
+    assert await processor.run_once() is True
+
+    async with factory() as session:
+        event = await session.get(OutboxEvent, event_id)
+        assert event is not None
+        assert event.status == OutboxStatus.FAILED
+        assert event.requires_review is True
+        assert event.next_attempt_at is None
     await engine.dispose()
 
 

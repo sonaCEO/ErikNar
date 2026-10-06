@@ -42,6 +42,30 @@ async def test_two_managers_cannot_claim_the_same_lead(migrated_postgres_url: st
 
 
 @pytest.mark.anyio
+async def test_manager_action_reports_when_another_manager_already_claimed(
+    migrated_postgres_url: str,
+) -> None:
+    engine = create_async_engine(migrated_postgres_url)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    lead_id, _ = await seed_lead_with_event(factory, idempotency_key="claim-feedback")
+    async with factory() as session:
+        first = User(name="Мария", telegram_user_id=3001)
+        second = User(name="Ольга", telegram_user_id=3002)
+        session.add_all([first, second])
+        await session.commit()
+    actions = ManagerActionService(factory)
+
+    winner = await actions.perform("claim", lead_id, first.telegram_user_id)
+    loser = await actions.perform("claim", lead_id, second.telegram_user_id)
+
+    assert winner.claimed is True
+    assert loser.claimed is False
+    assert loser.assigned_to_user_id == first.id
+    assert loser.assigned_to_name == "Мария"
+    await engine.dispose()
+
+
+@pytest.mark.anyio
 async def test_only_active_assignee_can_complete_lead(migrated_postgres_url: str) -> None:
     engine = create_async_engine(migrated_postgres_url)
     factory = async_sessionmaker(engine, expire_on_commit=False)

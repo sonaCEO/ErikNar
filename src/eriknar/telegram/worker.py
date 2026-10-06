@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import logging
 
 from aiogram import Bot, Dispatcher
 
@@ -9,10 +10,17 @@ from eriknar.outbox.processor import OutboxProcessor
 from eriknar.telegram.client import AiogramTelegramGateway
 from eriknar.telegram.handlers import build_router
 
+logger = logging.getLogger("eriknar.telegram.worker")
+
 
 async def _process_outbox(processor: OutboxProcessor, interval: float) -> None:
     while True:
-        processed = await processor.run_once()
+        try:
+            processed = await processor.run_once()
+        except Exception:
+            logger.exception("outbox_iteration_failed")
+            await asyncio.sleep(interval)
+            continue
         if not processed:
             await asyncio.sleep(interval)
 

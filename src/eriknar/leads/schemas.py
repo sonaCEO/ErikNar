@@ -64,4 +64,6 @@ class ClaimResult(BaseModel):
 
 class LeadActionResult(BaseModel):
     assigned_to_user_id: UUID
+    assigned_to_name: str | None = None
     status: LeadStatus
+    claimed: bool | None = None

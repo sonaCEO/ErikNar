@@ -10,11 +10,10 @@ WORKDIR /app
 
 COPY --from=uv /uv /usr/local/bin/uv
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
-
 COPY src ./src
 COPY alembic.ini ./
 COPY migrations ./migrations
+RUN uv sync --frozen --no-dev
 
 RUN useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin appuser \
     && chown -R appuser:appuser /app

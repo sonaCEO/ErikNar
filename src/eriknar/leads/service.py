@@ -119,6 +119,7 @@ class LeadService:
                 raise VariantUnavailableError(command.variant_id)
 
             phone = normalize_russian_phone(command.phone)
+            await self._leads.lock_customer_phone(phone)
             customer = await self._leads.get_customer_by_phone(phone)
             if customer is None:
                 customer = Customer(
@@ -136,6 +137,8 @@ class LeadService:
                 source=command.source,
                 status=LeadStatus.NEW,
                 snapshot=snapshot.model_dump(mode="json"),
+                customer_name=command.customer_name,
+                customer_phone=command.phone,
                 comment=command.comment,
                 idempotency_key=idempotency_key,
                 request_hash=request_hash,

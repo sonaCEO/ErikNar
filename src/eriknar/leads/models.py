@@ -38,6 +38,8 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         server_default=LeadStatus.NEW.value,
     )
     snapshot: Mapped[dict[str, object]] = mapped_column(JSONB)
+    customer_name: Mapped[str] = mapped_column(String(120))
+    customer_phone: Mapped[str] = mapped_column(String(40))
     comment: Mapped[str] = mapped_column(Text, default="", server_default="")
     idempotency_key: Mapped[str] = mapped_column(String(128), unique=True, index=True)
     request_hash: Mapped[str] = mapped_column(String(64))

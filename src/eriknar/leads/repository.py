@@ -32,6 +32,12 @@ class LeadRepository:
             {"key": key},
         )
 
+    async def lock_customer_phone(self, normalized_phone: str) -> None:
+        await self._session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:phone, 0))"),
+            {"phone": f"customer-phone:{normalized_phone}"},
+        )
+
     async def get_by_idempotency_key(self, key: str) -> Lead | None:
         return await self._session.scalar(select(Lead).where(Lead.idempotency_key == key))
 

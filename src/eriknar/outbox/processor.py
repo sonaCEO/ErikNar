@@ -65,13 +65,25 @@ class OutboxProcessor:
             event.completed_at = datetime.now(UTC)
             event.last_error = None
 
-    async def _fail(self, event_id: UUID, error: Exception) -> None:
+    async def _fail(
+        self, event_id: UUID, error: Exception, *, requires_review: bool = False
+    ) -> None:
         async with self._session_factory() as session, session.begin():
             event = await session.get(OutboxEvent, event_id, with_for_update=True)
             if event is None:
                 return
             event.last_error = str(error)[:2000]
             event.processing_started_at = None
+            if requires_review:
+                event.status = OutboxStatus.FAILED
+                event.requires_review = True
+                event.next_attempt_at = None
+                return
+            if isinstance(error, (ConnectionError, TimeoutError, OSError)):
+                delay = min(2 ** max(event.attempt_count - 1, 0), self._max_backoff_seconds)
+                event.status = OutboxStatus.PENDING
+                event.next_attempt_at = datetime.now(UTC) + timedelta(seconds=delay)
+                return
             if event.attempt_count >= self._max_attempts:
                 event.status = OutboxStatus.FAILED
                 event.next_attempt_at = None
@@ -88,15 +100,19 @@ class OutboxProcessor:
             lead = await self._load_lead(event_id)
             if lead.telegram_topic_id is None:
                 topic_id = await self._gateway.create_forum_topic(
-                    f"Заявка {str(lead.public_id)[:8]}"
+                    f"Заявка {lead.public_id}"
                 )
-                await self._save_topic(lead.id, topic_id)
+                try:
+                    await self._save_topic(lead.id, topic_id)
+                except Exception as exc:
+                    await self._fail(event_id, exc, requires_review=True)
+                    return True
                 lead.telegram_topic_id = topic_id
             if lead.telegram_message_id is None:
                 text = format_lead_card(
                     public_id=str(lead.public_id),
-                    customer_name=lead.customer.name,
-                    phone=lead.customer.phone_original,
+                    customer_name=lead.customer_name,
+                    phone=lead.customer_phone,
                     snapshot=lead.snapshot,
                     comment=lead.comment,
                 )
@@ -105,7 +121,11 @@ class OutboxProcessor:
                     text,
                     f"lead:claim:{lead.id}",
                 )
-                await self._complete(event_id, lead.id, message_id)
+                try:
+                    await self._complete(event_id, lead.id, message_id)
+                except Exception as exc:
+                    await self._fail(event_id, exc, requires_review=True)
+                    return True
             else:
                 await self._complete(event_id, lead.id, lead.telegram_message_id)
         except Exception as exc:

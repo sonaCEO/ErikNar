@@ -37,6 +37,14 @@ def test_request_id_is_generated_or_propagated() -> None:
     assert propagated == "browser-request-123"
 
 
+def test_request_logger_is_enabled() -> None:
+    import logging
+
+    create_app()
+
+    assert logging.getLogger("eriknar.http").isEnabledFor(logging.INFO)
+
+
 def test_readiness_reports_dependency_state() -> None:
     async def request_ready() -> tuple[int, dict[str, object]]:
         app = create_app()
