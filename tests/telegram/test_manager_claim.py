@@ -17,8 +17,8 @@ async def test_two_managers_cannot_claim_the_same_lead(migrated_postgres_url: st
     factory = async_sessionmaker(engine, expire_on_commit=False)
     lead_id, _ = await seed_lead_with_event(factory, idempotency_key="claim")
     async with factory() as session:
-        first_user = User(name="Мария", telegram_user_id=1001)
-        second_user = User(name="Ольга", telegram_user_id=1002)
+        first_user = User(name="Мария", login="maria", password_hash="!", telegram_user_id=1001)
+        second_user = User(name="Ольга", login="olga", password_hash="!", telegram_user_id=1002)
         session.add_all([first_user, second_user])
         await session.commit()
 
@@ -49,14 +49,14 @@ async def test_manager_action_reports_when_another_manager_already_claimed(
     factory = async_sessionmaker(engine, expire_on_commit=False)
     lead_id, _ = await seed_lead_with_event(factory, idempotency_key="claim-feedback")
     async with factory() as session:
-        first = User(name="Мария", telegram_user_id=3001)
-        second = User(name="Ольга", telegram_user_id=3002)
+        first = User(name="Мария", login="maria", password_hash="!", telegram_user_id=3001)
+        second = User(name="Ольга", login="olga", password_hash="!", telegram_user_id=3002)
         session.add_all([first, second])
         await session.commit()
     actions = ManagerActionService(factory)
 
-    winner = await actions.perform("claim", lead_id, first.telegram_user_id)
-    loser = await actions.perform("claim", lead_id, second.telegram_user_id)
+    winner = await actions.perform("claim", lead_id, 3001)
+    loser = await actions.perform("claim", lead_id, 3002)
 
     assert winner.claimed is True
     assert loser.claimed is False
@@ -71,17 +71,23 @@ async def test_only_active_assignee_can_complete_lead(migrated_postgres_url: str
     factory = async_sessionmaker(engine, expire_on_commit=False)
     lead_id, _ = await seed_lead_with_event(factory, idempotency_key="transitions")
     async with factory() as session:
-        manager = User(name="Мария", telegram_user_id=2001)
-        inactive = User(name="Ольга", telegram_user_id=2002, is_active=False)
+        manager = User(name="Мария", login="maria", password_hash="!", telegram_user_id=2001)
+        inactive = User(
+            name="Ольга",
+            login="olga",
+            password_hash="!",
+            telegram_user_id=2002,
+            is_active=False,
+        )
         session.add_all([manager, inactive])
         await session.commit()
 
     actions = ManagerActionService(factory)
     with pytest.raises(UnauthorizedManagerError):
-        await actions.perform("claim", lead_id, inactive.telegram_user_id)
+        await actions.perform("claim", lead_id, 2002)
 
-    await actions.perform("claim", lead_id, manager.telegram_user_id)
-    completed = await actions.perform("complete", lead_id, manager.telegram_user_id)
+    await actions.perform("claim", lead_id, 2001)
+    completed = await actions.perform("complete", lead_id, 2001)
 
     assert completed.status == LeadStatus.COMPLETED
     async with factory() as session:

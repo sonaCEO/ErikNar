@@ -9,11 +9,21 @@ from eriknar.catalog import models as catalog_models
 from eriknar.core.config import get_settings
 from eriknar.customers import models as customer_models
 from eriknar.db.base import Base
+from eriknar.leads import history as lead_history_models
 from eriknar.leads import models as lead_models
+from eriknar.media import cleanup_models as media_cleanup_models
 from eriknar.outbox import models as outbox_models
 from eriknar.users import models as user_models
 
-_ = catalog_models, customer_models, lead_models, outbox_models, user_models
+_ = (
+    catalog_models,
+    customer_models,
+    lead_history_models,
+    lead_models,
+    media_cleanup_models,
+    outbox_models,
+    user_models,
+)
 
 config = context.config
 if config.config_file_name is not None:

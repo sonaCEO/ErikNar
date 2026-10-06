@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, String, Text, Uuid
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Index, String, Text, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +15,15 @@ from eriknar.users.models import User
 
 class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "leads"
+    __table_args__ = (
+        Index("ix_leads_status_created_at", "status", "created_at"),
+        Index(
+            "ix_leads_assigned_status_created_at",
+            "assigned_to_user_id",
+            "status",
+            "created_at",
+        ),
+    )
 
     public_id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True), default=uuid4, unique=True, index=True

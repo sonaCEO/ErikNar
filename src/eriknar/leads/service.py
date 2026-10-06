@@ -179,7 +179,7 @@ class LeadService:
         )
 
     async def resolve(self, lead_id: UUID, user_id: UUID, target: LeadStatus) -> LeadActionResult:
-        if target not in {LeadStatus.COMPLETED, LeadStatus.REJECTED}:
+        if target not in {LeadStatus.COMPLETED, LeadStatus.CANCELLED}:
             raise InvalidLeadTransitionError(target)
         async with self._session.begin():
             lead = await self._leads.get_for_update(lead_id)

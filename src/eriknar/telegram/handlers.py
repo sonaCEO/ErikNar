@@ -40,7 +40,7 @@ class ManagerActionService:
                 )
             targets = {
                 "complete": LeadStatus.COMPLETED,
-                "reject": LeadStatus.REJECTED,
+                "reject": LeadStatus.CANCELLED,
             }
             if action not in targets:
                 raise ValueError(action)

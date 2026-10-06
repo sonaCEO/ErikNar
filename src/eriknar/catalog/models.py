@@ -32,6 +32,7 @@ class Product(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     max_temperature: Mapped[int] = mapped_column(Integer)
     heater_type: Mapped[str] = mapped_column(String(120))
     warranty_months: Mapped[int] = mapped_column(Integer)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     is_published: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
