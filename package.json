@@ -1,0 +1,11 @@
+{
+  "name": "eriknar",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix apps/frontend",
+    "build:frontend": "npm run build --prefix apps/frontend",
+    "lint:frontend": "npm run lint --prefix apps/frontend",
+    "preview:frontend": "npm run preview --prefix apps/frontend"
+  }
+}
