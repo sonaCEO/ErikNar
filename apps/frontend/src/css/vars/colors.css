@@ -1,0 +1,33 @@
+:root {
+  /* Colors */
+  --charcoal: #282824;
+  --white: #fff;
+  --copper: #a98455;
+  --main-bg: #f6f5f1;
+  --line: #dedcd5;
+  --ink: #282824;
+  --muted: #77766f;
+  --sage: #dfe1d8;
+  --paper: #f6f5f1;
+  --dskdms: #ff0000;
+  --online: #8bb477;
+  --chat-background: #f1f0eb;
+  --circle: #e5e3db;
+  --color-white-matt: rgb(238, 234, 225);
+  --color-black-matt: rgb(32, 32, 31);
+  --color-steel-grey: rgb(170, 169, 162);
+  --color-graphite: rgb(93, 93, 89);
+  --color-gold-matt: rgb(185, 155, 97);
+  --is-available: #718063;
+  --card-background: #ebeae5;
+  --text: #aaa9a3;
+  --text-for-modes: #ddd;
+  --benefit-grid: #b5b3ac;
+  --custom-art: #d4d1c8;
+  --ya: #e3332a;
+  --btn-pale: #eee8dc;
+  --contact-section: #e9dfd0;
+  --footer-background: #20201e;
+  --footer-color: #ccc;
+  --footer-p: #777;
+}
