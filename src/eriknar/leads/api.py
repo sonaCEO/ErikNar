@@ -26,7 +26,12 @@ async def create_lead(
     request: CreateLeadRequest,
     idempotency_key: Annotated[
         str,
-        Header(alias="Idempotency-Key", min_length=1, max_length=128),
+        Header(
+            alias="Idempotency-Key",
+            min_length=1,
+            max_length=128,
+            description="Уникальный UUID одной попытки отправки формы",
+        ),
     ],
     service: Annotated[LeadService, Depends(get_lead_service)],
 ) -> CreateLeadResponse:

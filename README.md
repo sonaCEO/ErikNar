@@ -82,6 +82,8 @@ uv run python -m eriknar.telegram.worker
 
 ## JSON-контракт
 
+Краткая памятка для интеграции фронта: [FRONTEND_API.md](FRONTEND_API.md).
+
 Основные маршруты:
 
 - `GET /api/v1/catalog/products`;

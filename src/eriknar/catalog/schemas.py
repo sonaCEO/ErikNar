@@ -11,10 +11,10 @@ Currency = Annotated[str, StringConstraints(to_upper=True, pattern=r"^[A-Z]{3}$"
 
 class VariantData(BaseModel):
     sku: SKU
-    width_mm: int = Field(gt=0)
-    height_mm: int = Field(gt=0)
-    price_minor: int = Field(ge=0)
-    currency: Currency = "RUB"
+    width_mm: int = Field(gt=0, description="Ширина варианта в миллиметрах")
+    height_mm: int = Field(gt=0, description="Высота варианта в миллиметрах")
+    price_minor: int = Field(ge=0, description="Цена в копейках: 1 260 000 = 12 600 ₽")
+    currency: Currency = Field(default="RUB", description="Трёхбуквенный код валюты")
     availability_status: AvailabilityStatus
 
 
@@ -43,8 +43,8 @@ class MediaView(BaseModel):
     id: UUID
     url: str
     alt_text: str
-    sort_order: int
-    is_primary: bool
+    sort_order: int = Field(description="Порядок фотографии в галерее")
+    is_primary: bool = Field(description="Основная фотография варианта")
 
 
 class VariantView(VariantData):
@@ -61,7 +61,9 @@ class ProductSummary(BaseModel):
     name: str
     model_code: str
     short_description: str
-    min_price_minor: int | None
+    min_price_minor: int | None = Field(
+        description="Минимальная цена среди доступных вариантов, в копейках"
+    )
     currency: str
     primary_image_url: str | None
 

@@ -45,14 +45,14 @@ class LeadResult(BaseModel):
 
 
 class CreateLeadRequest(BaseModel):
-    variant_id: UUID
+    variant_id: UUID = Field(description="ID выбранной комплектации из карточки товара")
     customer_name: Name
     phone: str = Field(min_length=5, max_length=40)
     comment: str = Field(default="", max_length=2000)
 
 
 class CreateLeadResponse(BaseModel):
-    public_id: UUID
+    public_id: UUID = Field(description="Публичный UUID заявки для отображения клиенту")
     status: LeadStatus
 
 
