@@ -1,0 +1,1 @@
+"""ErikNar backend application."""

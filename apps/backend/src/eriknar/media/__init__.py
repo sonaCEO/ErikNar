@@ -1,0 +1,1 @@
+"""Product media storage domain."""

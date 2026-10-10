@@ -1,0 +1,72 @@
+import asyncio
+from logging.config import fileConfig
+
+from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from eriknar.catalog import models as catalog_models
+from eriknar.core.config import get_settings
+from eriknar.customers import models as customer_models
+from eriknar.db.base import Base
+from eriknar.leads import history as lead_history_models
+from eriknar.leads import models as lead_models
+from eriknar.media import cleanup_models as media_cleanup_models
+from eriknar.outbox import models as outbox_models
+from eriknar.users import models as user_models
+
+_ = (
+    catalog_models,
+    customer_models,
+    lead_history_models,
+    lead_models,
+    media_cleanup_models,
+    outbox_models,
+    user_models,
+)
+
+config = context.config
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+config.set_main_option("sqlalchemy.url", get_settings().database_url)
+target_metadata = Base.metadata
+
+
+def run_migrations_offline() -> None:
+    context.configure(
+        url=config.get_main_option("sqlalchemy.url"),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def do_run_migrations(connection: object) -> None:
+    context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+async def run_async_migrations() -> None:
+    connectable = async_engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+    await connectable.dispose()
+
+
+def run_migrations_online() -> None:
+    asyncio.run(run_async_migrations())
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
