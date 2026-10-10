@@ -3,7 +3,7 @@
 Монорепозиторий сайта-каталога полотенцесушителей ErikNar.
 
 - `apps/frontend` — клиентская часть на React;
-- `apps/backend` — FastAPI, PostgreSQL, MinIO и Telegram-бот;
+- `apps/backend` — FastAPI, PostgreSQL, S3-совместимое хранилище и Telegram-бот;
 - `compose.yaml` — локальный запуск инфраструктуры и backend-сервисов.
 
 ## Запуск backend

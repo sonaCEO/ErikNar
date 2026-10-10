@@ -1,7 +1,7 @@
 # ErikNar backend
 
 Backend каталога полотенцесушителей ErikNar: публичный JSON API, PostgreSQL,
-хранение изображений в MinIO и Telegram-воркер для заявок менеджерам.
+S3-совместимое хранение изображений и Telegram-воркер для заявок менеджерам.
 
 ## Что нужно установить
 
@@ -34,7 +34,7 @@ docker compose up --build
 - OpenAPI/Swagger: `http://localhost:8000/docs`;
 - liveness: `http://localhost:8000/api/v1/health`;
 - readiness PostgreSQL и MinIO: `http://localhost:8000/api/v1/ready`;
-- консоль MinIO: `http://localhost:9001`.
+- консоль объектного хранилища: `http://localhost:9001`.
 
 Остановка:
 
