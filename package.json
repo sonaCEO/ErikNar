@@ -6,6 +6,10 @@
     "dev:frontend": "npm run dev --prefix apps/frontend",
     "build:frontend": "npm run build --prefix apps/frontend",
     "lint:frontend": "npm run lint --prefix apps/frontend",
-    "preview:frontend": "npm run preview --prefix apps/frontend"
+    "preview:frontend": "npm run preview --prefix apps/frontend",
+    "dev:backend": "cd apps/backend && uv run uvicorn eriknar.main:app --reload",
+    "test:backend": "cd apps/backend && uv run pytest -v",
+    "lint:backend": "cd apps/backend && uv run ruff check . && uv run mypy src tests",
+    "dev": "docker compose up --build"
   }
 }

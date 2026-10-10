@@ -1,0 +1,81 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - "apps/backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "apps/backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: eriknar
+          POSTGRES_USER: eriknar
+          POSTGRES_PASSWORD: ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U eriknar -d eriknar"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: apps/backend
+
+    env:
+      ERIKNAR_ENVIRONMENT: test
+      ERIKNAR_DATABASE_URL: postgresql+psycopg://eriknar:ci-password@127.0.0.1:5432/eriknar
+      ERIKNAR_MINIO_ENDPOINT: 127.0.0.1:9000
+      ERIKNAR_MINIO_ACCESS_KEY: eriknar
+      ERIKNAR_MINIO_SECRET_KEY: ci-minio-password
+      ERIKNAR_MINIO_BUCKET: product-media
+      ERIKNAR_MINIO_SECURE: "false"
+      ERIKNAR_MEDIA_PUBLIC_BASE_URL: http://127.0.0.1:9000
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        with:
+          install: false
+          cache: true
+
+      - run: mise trust .mise.toml && mise install
+      - run: uv sync --frozen
+      - name: Start MinIO service
+        working-directory: .
+        run: |
+          docker run --detach --name eriknar-ci-minio \
+            --publish 9000:9000 \
+            --env MINIO_ROOT_USER=eriknar \
+            --env MINIO_ROOT_PASSWORD=ci-minio-password \
+            quay.io/minio/minio:RELEASE.2025-09-06T17-38-46Z server /data
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:9000/minio/health/live; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs eriknar-ci-minio
+          exit 1
+      - run: uv run ruff check .
+      - run: uv run mypy src tests
+      - run: uv run alembic upgrade head
+      - run: uv run alembic check
+      - run: uv run pytest -v
+      - name: Build and smoke-test backend image
+        working-directory: .
+        run: |
+          docker build --tag eriknar-backend-ci apps/backend
+          docker run --rm eriknar-backend-ci python -c "import eriknar.main"
+          docker run --rm eriknar-backend-ci alembic heads

@@ -11,7 +11,7 @@ Backend каталога полотенцесушителей ErikNar: публ�
 
 ## Настройка окружения
 
-Из корня проекта:
+Из корня репозитория:
 
 ```bash
 cp .env.example .env
@@ -47,7 +47,10 @@ docker compose down
 
 ## Локальная разработка
 
+Перейдите в каталог backend:
+
 ```bash
+cd apps/backend
 uv sync --frozen
 uv run alembic upgrade head
 uv run uvicorn eriknar.main:app --reload
