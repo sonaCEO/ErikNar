@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,6 +31,13 @@ class Settings(BaseSettings):
     access_token_minutes: int = 15
     login_max_failures: int = 5
     login_window_minutes: int = 15
+
+    @field_validator("telegram_bot_token", "telegram_manager_chat_id", mode="before")
+    @classmethod
+    def empty_telegram_setting_is_none(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @model_validator(mode="after")
     def validate_security_settings(self) -> "Settings":
