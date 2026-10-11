@@ -1,16 +1,24 @@
 from uuid import UUID
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.enums import ParseMode
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from eriknar.leads.enums import LeadStatus
+from eriknar.leads.models import Lead
 from eriknar.leads.schemas import LeadActionResult
-from eriknar.leads.service import LeadService
+from eriknar.leads.service import InvalidLeadTransitionError, LeadService
+from eriknar.telegram.client import lead_keyboard
+from eriknar.telegram.formatters import format_lead_state
 from eriknar.users.repository import UserRepository
 
 
 class UnauthorizedManagerError(ValueError):
+    pass
+
+
+class ManagerActionUnavailableError(ValueError):
     pass
 
 
@@ -27,16 +35,16 @@ class ManagerActionService:
         async with self._session_factory() as session:
             service = LeadService(session)
             if action == "claim":
-                result = await service.claim(lead_id, user.id)
+                claim_result = await service.claim(lead_id, user.id)
                 async with self._session_factory() as lookup_session:
                     assignee = await UserRepository(lookup_session).get_by_id(
-                        result.assigned_to_user_id
+                        claim_result.assigned_to_user_id
                     )
                 return LeadActionResult(
-                    assigned_to_user_id=result.assigned_to_user_id,
+                    assigned_to_user_id=claim_result.assigned_to_user_id,
                     assigned_to_name=assignee.name if assignee else None,
-                    status=result.status,
-                    claimed=result.claimed,
+                    status=claim_result.status,
+                    claimed=claim_result.claimed,
                 )
             targets = {
                 "complete": LeadStatus.COMPLETED,
@@ -44,7 +52,33 @@ class ManagerActionService:
             }
             if action not in targets:
                 raise ValueError(action)
-            return await service.resolve(lead_id, user.id, targets[action])
+            try:
+                resolved = await service.resolve(lead_id, user.id, targets[action])
+            except InvalidLeadTransitionError as exc:
+                raise ManagerActionUnavailableError(
+                    await self._unavailable_message(lead_id, user.id)
+                ) from exc
+            return LeadActionResult(
+                assigned_to_user_id=resolved.assigned_to_user_id,
+                assigned_to_name=user.name,
+                status=resolved.status,
+            )
+
+    async def _unavailable_message(self, lead_id: UUID, user_id: UUID) -> str:
+        async with self._session_factory() as session:
+            lead = await session.get(Lead, lead_id)
+            if lead is None:
+                return "Заявка не найдена"
+            if lead.status == LeadStatus.COMPLETED:
+                return "Заявка уже завершена"
+            if lead.status == LeadStatus.CANCELLED:
+                return "Заявка уже отклонена"
+            if lead.status == LeadStatus.NEW:
+                return "Сначала возьмите заявку в работу"
+            if lead.assigned_to_user_id != user_id and lead.assigned_to_user_id is not None:
+                assignee = await UserRepository(session).get_by_id(lead.assigned_to_user_id)
+                return f"Заявка закреплена за {assignee.name if assignee else 'другим сотрудником'}"
+            return "Действие недоступно"
 
 
 def build_router(session_factory: async_sessionmaker[AsyncSession]) -> Router:
@@ -64,14 +98,23 @@ def build_router(session_factory: async_sessionmaker[AsyncSession]) -> Router:
                 )
             elif result.claimed is True:
                 await callback.answer("Заявка закреплена за вами")
-                if callback.message is not None:
-                    await callback.message.answer(
-                        f"Ответственная: {result.assigned_to_name or callback.from_user.full_name}"
-                    )
             else:
-                await callback.answer(f"Статус: {result.status.value}")
+                labels = {
+                    LeadStatus.COMPLETED: "Заявка завершена",
+                    LeadStatus.CANCELLED: "Заявка отклонена",
+                }
+                await callback.answer(labels[result.status])
+            if isinstance(callback.message, Message) and result.claimed is not False:
+                assignee_name = result.assigned_to_name or callback.from_user.full_name
+                await callback.message.edit_text(
+                    format_lead_state(callback.message.html_text, result.status, assignee_name),
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=lead_keyboard(raw_lead_id, result.status),
+                )
         except UnauthorizedManagerError:
             await callback.answer("Нет доступа", show_alert=True)
+        except ManagerActionUnavailableError as exc:
+            await callback.answer(str(exc), show_alert=True)
         except (ValueError, TypeError):
             await callback.answer("Действие недоступно", show_alert=True)
 

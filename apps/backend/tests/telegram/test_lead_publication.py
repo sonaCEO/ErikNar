@@ -4,11 +4,12 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from eriknar.leads.enums import LeadStatus
 from eriknar.leads.models import Lead
 from eriknar.outbox.models import OutboxEvent, OutboxStatus
 from eriknar.outbox.processor import OutboxProcessor
-from eriknar.telegram.client import TelegramGateway
-from eriknar.telegram.formatters import format_lead_card
+from eriknar.telegram.client import TelegramGateway, lead_keyboard
+from eriknar.telegram.formatters import format_lead_card, format_lead_state
 from tests.factories import seed_lead_with_event
 
 
@@ -42,6 +43,37 @@ def test_lead_card_contains_snapshot_and_escapes_customer_text() -> None:
     assert "Сенсорная" in message
     assert "12 600 ₽" in message
     assert "Позвонить после 18:00 &amp; уточнить" in message
+
+
+def test_lead_keyboard_only_offers_actions_valid_for_current_status() -> None:
+    lead_id = "10000000-0000-4000-8000-000000000001"
+
+    new_keyboard = lead_keyboard(lead_id, LeadStatus.NEW)
+    active_keyboard = lead_keyboard(lead_id, LeadStatus.IN_PROGRESS)
+
+    assert new_keyboard is not None
+    assert [button.text for row in new_keyboard.inline_keyboard for button in row] == [
+        "Взять в работу"
+    ]
+    assert active_keyboard is not None
+    assert [button.text for row in active_keyboard.inline_keyboard for button in row] == [
+        "Завершить",
+        "Отклонить",
+    ]
+    assert lead_keyboard(lead_id, LeadStatus.COMPLETED) is None
+    assert lead_keyboard(lead_id, LeadStatus.CANCELLED) is None
+
+
+def test_lead_state_replaces_previous_state_in_card() -> None:
+    original = "<b>Новая заявка</b>\n\n<b>Клиент:</b> Анна"
+    active = format_lead_state(original, LeadStatus.IN_PROGRESS, "Мария <менеджер>")
+    completed = format_lead_state(active, LeadStatus.COMPLETED, "Мария <менеджер>")
+
+    assert "🟡 В работе" in active  # noqa: RUF001
+    assert "Мария &lt;менеджер&gt;" in active
+    assert "✅ Завершена" in completed
+    assert "🟡 В работе" not in completed  # noqa: RUF001
+    assert completed.count("<b>Статус:</b>") == 1
 
 
 class RecordingGateway(TelegramGateway):

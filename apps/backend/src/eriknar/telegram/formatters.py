@@ -2,6 +2,10 @@ from collections.abc import Mapping
 from html import escape
 from typing import cast
 
+from eriknar.leads.enums import LeadStatus
+
+_STATUS_MARKER = "\n\n<b>Статус:</b>"
+
 
 def _name(snapshot: Mapping[str, object], key: str) -> str:
     value = cast(Mapping[str, object], snapshot[key])
@@ -39,3 +43,18 @@ def format_lead_card(
     if comment:
         lines.extend(["", f"<b>Комментарий:</b> {escape(comment)}"])
     return "\n".join(lines)
+
+
+def format_lead_state(text: str, status: LeadStatus, assignee_name: str | None) -> str:
+    """Replaces the status footer while preserving the original lead card."""
+    base = text.split(_STATUS_MARKER, maxsplit=1)[0]
+    labels = {
+        LeadStatus.NEW: "🆕 Новая",
+        LeadStatus.IN_PROGRESS: "🟡 В работе",  # noqa: RUF001
+        LeadStatus.COMPLETED: "✅ Завершена",
+        LeadStatus.CANCELLED: "❌ Отклонена",
+    }
+    lines = [f"{_STATUS_MARKER} {labels[status]}"]
+    if assignee_name:
+        lines.append(f"<b>Ответственная:</b> {escape(assignee_name)}")
+    return base + "\n".join(lines)

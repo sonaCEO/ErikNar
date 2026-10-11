@@ -6,7 +6,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from eriknar.leads.enums import LeadStatus
 from eriknar.leads.models import Lead
 from eriknar.leads.service import LeadService
-from eriknar.telegram.handlers import ManagerActionService, UnauthorizedManagerError
+from eriknar.telegram.handlers import (
+    ManagerActionService,
+    ManagerActionUnavailableError,
+    UnauthorizedManagerError,
+)
 from eriknar.users.models import User
 from tests.factories import seed_lead_with_event
 
@@ -90,6 +94,9 @@ async def test_only_active_assignee_can_complete_lead(migrated_postgres_url: str
     completed = await actions.perform("complete", lead_id, 2001)
 
     assert completed.status == LeadStatus.COMPLETED
+    assert completed.assigned_to_name == "Мария"
+    with pytest.raises(ManagerActionUnavailableError, match="Заявка уже завершена"):
+        await actions.perform("reject", lead_id, 2001)
     async with factory() as session:
         lead = await session.get(Lead, lead_id)
         assert lead is not None
