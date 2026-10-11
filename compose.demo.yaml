@@ -1,0 +1,125 @@
+name: eriknar-demo
+
+x-backend: &backend
+  build:
+    context: ./apps/backend
+  env_file: ${ERIKNAR_ENV_FILE:-.env.demo}
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: rustfs/rustfs:1.0.1
+    command: /data
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${MINIO_ROOT_USER}
+      RUSTFS_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - media-data:/data
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl --fail --silent http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  seed:
+    <<: *backend
+    restart: "no"
+    command: ["python", "-m", "eriknar.catalog.cli", "seed-demo"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  create-admin:
+    <<: *backend
+    restart: "no"
+    command: ["python", "-m", "eriknar.users.cli", "create-admin"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    <<: *backend
+    command: ["uvicorn", "eriknar.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+      create-admin:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  media-worker:
+    <<: *backend
+    command: ["python", "-m", "eriknar.media.worker"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+  telegram-worker:
+    <<: *backend
+    profiles: ["telegram"]
+    command: ["python", "-m", "eriknar.telegram.worker"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./apps/frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "--url", "http://web:80"]
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  media-data:
