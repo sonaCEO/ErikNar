@@ -10,6 +10,7 @@ from eriknar.catalog.enums import AvailabilityStatus
 from eriknar.catalog.models import ProductVariant
 from eriknar.customers.models import Customer
 from eriknar.leads.enums import LeadStatus
+from eriknar.leads.history import LeadHistory
 from eriknar.leads.models import Lead
 from eriknar.leads.repository import LeadRepository
 from eriknar.leads.schemas import (
@@ -172,6 +173,17 @@ class LeadService:
             lead.assigned_to_user_id = user_id
             lead.assigned_at = datetime.now(UTC)
             lead.status = LeadStatus.IN_PROGRESS
+            self._session.add(
+                LeadHistory(
+                    lead_id=lead.id,
+                    actor_user_id=user_id,
+                    action="claimed",
+                    previous_status=LeadStatus.NEW,
+                    new_status=LeadStatus.IN_PROGRESS,
+                    previous_assignee_id=None,
+                    new_assignee_id=user_id,
+                )
+            )
         return ClaimResult(
             claimed=True,
             assigned_to_user_id=user_id,
@@ -187,6 +199,18 @@ class LeadService:
                 raise LeadNotFoundError(lead_id)
             if lead.status != LeadStatus.IN_PROGRESS or lead.assigned_to_user_id != user_id:
                 raise InvalidLeadTransitionError(lead_id)
+            previous_status = lead.status
             lead.status = target
             lead.closed_at = datetime.now(UTC)
+            self._session.add(
+                LeadHistory(
+                    lead_id=lead.id,
+                    actor_user_id=user_id,
+                    action="status_changed",
+                    previous_status=previous_status,
+                    new_status=target,
+                    previous_assignee_id=user_id,
+                    new_assignee_id=user_id,
+                )
+            )
         return LeadActionResult(assigned_to_user_id=user_id, status=target)

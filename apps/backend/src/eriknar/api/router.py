@@ -10,6 +10,7 @@ from eriknar.catalog.admin_api import router as admin_catalog_router
 from eriknar.catalog.api import router as catalog_router
 from eriknar.core.config import get_settings
 from eriknar.db.session import engine
+from eriknar.leads.admin_api import router as admin_leads_router
 from eriknar.leads.api import router as leads_router
 from eriknar.media.admin_api import router as admin_media_router
 from eriknar.users.api import router as users_router
@@ -56,6 +57,7 @@ async def get_readiness() -> dict[str, object]:
 router = APIRouter(prefix="/api/v1")
 router.include_router(admin_catalog_router)
 router.include_router(admin_media_router)
+router.include_router(admin_leads_router)
 router.include_router(catalog_router)
 router.include_router(leads_router)
 router.include_router(users_router)

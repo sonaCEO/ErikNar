@@ -12,9 +12,12 @@ from eriknar.catalog.admin_service import (
     ConcurrentUpdateError,
 )
 from eriknar.catalog.service import ProductNotFoundError
+from eriknar.leads.admin_service import LeadAssigneeNotFoundError
 from eriknar.leads.service import (
     IdempotencyConflictError,
+    InvalidLeadTransitionError,
     InvalidPhoneError,
+    LeadNotFoundError,
     VariantUnavailableError,
 )
 from eriknar.media.admin_service import AdminMediaNotFoundError
@@ -182,6 +185,25 @@ def install_exception_handlers(app: FastAPI) -> None:
             )
         )
         return JSONResponse(status_code=422, content=payload.model_dump(mode="json"))
+
+    @app.exception_handler(LeadNotFoundError)
+    async def lead_not_found_handler(request: Request, exc: LeadNotFoundError) -> JSONResponse:
+        del request, exc
+        return error(404, "lead_not_found", "Заявка не найдена")
+
+    @app.exception_handler(LeadAssigneeNotFoundError)
+    async def lead_assignee_not_found_handler(
+        request: Request, exc: LeadAssigneeNotFoundError
+    ) -> JSONResponse:
+        del request, exc
+        return error(404, "lead_assignee_not_found", "Сотрудник не найден или отключён")
+
+    @app.exception_handler(InvalidLeadTransitionError)
+    async def invalid_lead_transition_handler(
+        request: Request, exc: InvalidLeadTransitionError
+    ) -> JSONResponse:
+        del request, exc
+        return error(409, "invalid_lead_transition", "Недоступный переход статуса заявки")
 
     @app.exception_handler(Exception)
     async def internal_error_handler(request: Request, exc: Exception) -> JSONResponse:

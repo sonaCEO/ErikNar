@@ -72,3 +72,24 @@
 Список: `GET /admin/catalog/products/{product_id}/media`. Метаданные меняются через
 `PATCH /admin/catalog/media/{media_id}`, изображение удаляется через
 `DELETE /admin/catalog/media/{media_id}`. Для изменения также нужен `expected_updated_at`.
+
+## Заявки в админке
+
+Сотрудницы и администратор работают с заявками через:
+
+- `GET /admin/leads?page=1&page_size=20` — список;
+- `GET /admin/leads/{lead_id}` — карточка вместе с историей действий;
+- `POST /admin/leads/{lead_id}/claim` — взять свободную заявку в работу;
+- `PATCH /admin/leads/{lead_id}/status` — завершить или отклонить заявку;
+- `PATCH /admin/leads/{lead_id}/assignee` — назначить сотрудницу, только для администратора.
+
+Список фильтруется параметрами `status`, `assigned_to_user_id` и `unassigned=true`.
+Статусы в JSON: `new`, `in_progress`, `completed`, `cancelled`. В интерфейсе
+`cancelled` показываем как «Отклонена».
+
+Изменение статуса и ответственной сотрудницы требует `expected_updated_at` из последней
+загруженной карточки. Ответ `409 concurrent_update` означает, что заявку уже изменили в
+другой вкладке или через Telegram; нужно обновить карточку перед повторным действием.
+
+Поле `snapshot` содержит название модели, размер, цвет, управление и цену на момент подачи
+заявки. Для старых заявок эти данные нельзя пересчитывать по текущему каталогу.
