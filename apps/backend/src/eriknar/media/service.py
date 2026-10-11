@@ -29,11 +29,19 @@ class MediaTooLargeError(ValueError):
     pass
 
 
+class EmptyMediaError(ValueError):
+    pass
+
+
 class MediaService:
     def __init__(self, *, storage: ObjectStorage, bucket: str, max_size_bytes: int) -> None:
         self._storage = storage
         self._bucket = bucket
         self._max_size_bytes = max_size_bytes
+
+    @property
+    def max_size_bytes(self) -> int:
+        return self._max_size_bytes
 
     async def store_product_image(
         self,
@@ -52,7 +60,7 @@ class MediaService:
         if len(content) > self._max_size_bytes:
             raise MediaTooLargeError(len(content))
         if not content:
-            raise ValueError("Image cannot be empty")
+            raise EmptyMediaError
         if not _content_matches_type(content, content_type):
             raise UnsupportedMediaTypeError(content_type)
 

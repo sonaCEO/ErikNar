@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     minio_secure: bool = False
     media_public_base_url: str = "http://localhost:9000"
     media_max_size_bytes: int = 10 * 1024 * 1024
+    media_cleanup_poll_seconds: float = 5.0
+    object_storage_health_path: str = "/health"
     telegram_bot_token: str | None = None
     telegram_manager_chat_id: int | None = None
     telegram_outbox_poll_seconds: float = 1.0

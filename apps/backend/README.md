@@ -27,7 +27,8 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Сервис `migrate` сначала применяет миграции, затем запускаются API и Telegram-воркер.
+Сервис `migrate` сначала применяет миграции, затем запускаются API, Telegram-воркер
+и воркер очистки удалённых изображений.
 После старта доступны:
 
 - API: `http://localhost:8000/api/v1`;

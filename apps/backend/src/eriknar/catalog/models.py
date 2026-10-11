@@ -8,10 +8,12 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -126,6 +128,15 @@ class ProductMedia(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         CheckConstraint("size_bytes > 0", name="positive_size"),
         CheckConstraint("sort_order >= 0", name="non_negative_sort_order"),
         UniqueConstraint("bucket", "object_key", name="uq_product_media_object"),
+        Index(
+            "uq_product_media_primary_scope",
+            "product_id",
+            "variant_id",
+            "body_color_id",
+            unique=True,
+            postgresql_nulls_not_distinct=True,
+            postgresql_where=text("is_primary"),
+        ),
     )
 
     product_id: Mapped[UUID] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"))

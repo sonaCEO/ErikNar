@@ -58,3 +58,17 @@
 Административные `PATCH`-запросы передают `expected_updated_at` из последнего ответа. Если
 кто-то уже изменил запись, API вернёт `409 concurrent_update`; фронт должен заново загрузить
 данные и попросить повторить изменение.
+
+### Фотографии в админке
+
+`POST /admin/catalog/products/{product_id}/media` принимает `multipart/form-data`:
+
+- `file` — JPEG, PNG или WebP размером до 10 МБ;
+- `alt_text` — описание изображения;
+- `sort_order` — порядок в галерее;
+- `is_primary` — главное фото;
+- `variant_id` и `body_color_id` — необязательная привязка к комплектации или цвету.
+
+Список: `GET /admin/catalog/products/{product_id}/media`. Метаданные меняются через
+`PATCH /admin/catalog/media/{media_id}`, изображение удаляется через
+`DELETE /admin/catalog/media/{media_id}`. Для изменения также нужен `expected_updated_at`.

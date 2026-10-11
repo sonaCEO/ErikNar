@@ -41,6 +41,19 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  media-worker:
+    build:
+      context: ./apps/backend
+    env_file: .env
+    command: ["python", "-m", "eriknar.media.worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
   postgres:
     image: postgres:16-alpine
     environment:

@@ -17,6 +17,8 @@ from eriknar.leads.service import (
     InvalidPhoneError,
     VariantUnavailableError,
 )
+from eriknar.media.admin_service import AdminMediaNotFoundError
+from eriknar.media.service import EmptyMediaError, MediaTooLargeError, UnsupportedMediaTypeError
 from eriknar.users.dependencies import AuthenticationError, PermissionDeniedError
 from eriknar.users.service import (
     EmployeeNotFoundError,
@@ -105,6 +107,30 @@ def install_exception_handlers(app: FastAPI) -> None:
     async def catalog_conflict_handler(request: Request, exc: CatalogConflictError) -> JSONResponse:
         del request, exc
         return error(409, "catalog_conflict", "Конфликт данных каталога")
+
+    @app.exception_handler(AdminMediaNotFoundError)
+    async def admin_media_not_found_handler(
+        request: Request, exc: AdminMediaNotFoundError
+    ) -> JSONResponse:
+        del request, exc
+        return error(404, "admin_media_not_found", "Изображение не найдено")
+
+    @app.exception_handler(UnsupportedMediaTypeError)
+    async def unsupported_media_type_handler(
+        request: Request, exc: UnsupportedMediaTypeError
+    ) -> JSONResponse:
+        del request, exc
+        return error(415, "unsupported_media_type", "Поддерживаются JPEG, PNG и WebP")
+
+    @app.exception_handler(MediaTooLargeError)
+    async def media_too_large_handler(request: Request, exc: MediaTooLargeError) -> JSONResponse:
+        del request, exc
+        return error(413, "media_too_large", "Файл превышает допустимый размер")
+
+    @app.exception_handler(EmptyMediaError)
+    async def empty_media_handler(request: Request, exc: EmptyMediaError) -> JSONResponse:
+        del request, exc
+        return error(422, "empty_media", "Файл изображения пуст")
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(
