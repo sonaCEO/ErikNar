@@ -12,6 +12,9 @@ from tests.factories import seed_lead_with_event
 
 
 class TemporarilyFailingGateway(TelegramGateway):
+    async def rename_topic(self, topic_id: int, name: str) -> None:
+        raise AssertionError("outbox delivery must not rename topics")
+
     async def create_forum_topic(self, name: str) -> int:
         raise ConnectionError("Telegram unavailable")
 
@@ -20,6 +23,9 @@ class TemporarilyFailingGateway(TelegramGateway):
 
 
 class WorkingGateway(TelegramGateway):
+    async def rename_topic(self, topic_id: int, name: str) -> None:
+        raise AssertionError("outbox delivery must not rename topics")
+
     async def create_forum_topic(self, name: str) -> int:
         return 701
 

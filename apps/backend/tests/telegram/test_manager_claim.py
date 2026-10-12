@@ -63,6 +63,9 @@ async def test_manager_action_reports_when_another_manager_already_claimed(
     loser = await actions.perform("claim", lead_id, 3002)
 
     assert winner.claimed is True
+    assert winner.number >= 1
+    assert winner.model_code == "B"
+    assert winner.telegram_topic_id is None
     assert loser.claimed is False
     assert loser.assigned_to_user_id == first.id
     assert loser.assigned_to_name == "Мария"
@@ -90,11 +93,13 @@ async def test_only_active_assignee_can_complete_lead(migrated_postgres_url: str
     with pytest.raises(UnauthorizedManagerError):
         await actions.perform("claim", lead_id, 2002)
 
-    await actions.perform("claim", lead_id, 2001)
+    claimed = await actions.perform("claim", lead_id, 2001)
     completed = await actions.perform("complete", lead_id, 2001)
 
     assert completed.status == LeadStatus.COMPLETED
     assert completed.assigned_to_name == "Мария"
+    assert completed.number == claimed.number
+    assert completed.model_code == "B"
     with pytest.raises(ManagerActionUnavailableError, match="Заявка уже завершена"):
         await actions.perform("reject", lead_id, 2001)
     async with factory() as session:

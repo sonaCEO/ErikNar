@@ -27,7 +27,11 @@ def lead_keyboard(lead_id: str, status: LeadStatus) -> InlineKeyboardMarkup | No
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-class TelegramGateway(Protocol):
+class TelegramTopicGateway(Protocol):
+    async def rename_topic(self, topic_id: int, name: str) -> None: ...
+
+
+class TelegramGateway(TelegramTopicGateway, Protocol):
     async def create_forum_topic(self, name: str) -> int: ...
 
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int: ...
@@ -48,6 +52,16 @@ class AiogramTelegramGateway:
         except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
             raise TransientTelegramError(str(exc)) from exc
         return topic.message_thread_id
+
+    async def rename_topic(self, topic_id: int, name: str) -> None:
+        try:
+            await self._bot.edit_forum_topic(
+                chat_id=self._manager_chat_id,
+                message_thread_id=topic_id,
+                name=name,
+            )
+        except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
+            raise TransientTelegramError(str(exc)) from exc
 
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int:
         lead_id = callback_data.rsplit(":", 1)[-1]

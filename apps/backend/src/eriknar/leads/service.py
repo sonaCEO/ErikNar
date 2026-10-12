@@ -214,4 +214,10 @@ class LeadService:
                     new_assignee_id=user_id,
                 )
             )
-        return LeadActionResult(assigned_to_user_id=user_id, status=target)
+        return LeadActionResult(
+            assigned_to_user_id=user_id,
+            status=target,
+            number=lead.number,
+            model_code=str(lead.snapshot["model_code"]),
+            telegram_topic_id=lead.telegram_topic_id,
+        )

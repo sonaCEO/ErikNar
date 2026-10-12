@@ -68,4 +68,7 @@ class LeadActionResult(BaseModel):
     assigned_to_user_id: UUID
     assigned_to_name: str | None = None
     status: LeadStatus
+    number: int
+    model_code: str
+    telegram_topic_id: int | None
     claimed: bool | None = None

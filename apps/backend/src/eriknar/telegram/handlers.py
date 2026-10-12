@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 from aiogram import F, Router
@@ -9,8 +10,8 @@ from eriknar.leads.enums import LeadStatus
 from eriknar.leads.models import Lead
 from eriknar.leads.schemas import LeadActionResult
 from eriknar.leads.service import InvalidLeadTransitionError, LeadService
-from eriknar.telegram.client import lead_keyboard
-from eriknar.telegram.formatters import format_lead_state
+from eriknar.telegram.client import TelegramTopicGateway, lead_keyboard
+from eriknar.telegram.formatters import format_lead_state, format_topic_name
 from eriknar.users.repository import UserRepository
 
 
@@ -20,6 +21,29 @@ class UnauthorizedManagerError(ValueError):
 
 class ManagerActionUnavailableError(ValueError):
     pass
+
+
+async def update_lead_presentation(
+    message: Any,
+    lead_id: str,
+    result: LeadActionResult,
+    topic_gateway: TelegramTopicGateway,
+) -> None:
+    await message.edit_text(
+        format_lead_state(message.html_text, result.status, result.assigned_to_name),
+        parse_mode=ParseMode.HTML,
+        reply_markup=lead_keyboard(lead_id, result.status),
+    )
+    if result.telegram_topic_id is not None:
+        await topic_gateway.rename_topic(
+            result.telegram_topic_id,
+            format_topic_name(
+                result.number,
+                result.status,
+                result.model_code,
+                result.assigned_to_name,
+            ),
+        )
 
 
 class ManagerActionService:
@@ -40,10 +64,16 @@ class ManagerActionService:
                     assignee = await UserRepository(lookup_session).get_by_id(
                         claim_result.assigned_to_user_id
                     )
+                    lead = await lookup_session.get(Lead, lead_id)
+                if lead is None:
+                    raise ManagerActionUnavailableError("Заявка не найдена")
                 return LeadActionResult(
                     assigned_to_user_id=claim_result.assigned_to_user_id,
                     assigned_to_name=assignee.name if assignee else None,
                     status=claim_result.status,
+                    number=lead.number,
+                    model_code=str(lead.snapshot["model_code"]),
+                    telegram_topic_id=lead.telegram_topic_id,
                     claimed=claim_result.claimed,
                 )
             targets = {
@@ -62,6 +92,9 @@ class ManagerActionService:
                 assigned_to_user_id=resolved.assigned_to_user_id,
                 assigned_to_name=user.name,
                 status=resolved.status,
+                number=resolved.number,
+                model_code=resolved.model_code,
+                telegram_topic_id=resolved.telegram_topic_id,
             )
 
     async def _unavailable_message(self, lead_id: UUID, user_id: UUID) -> str:
@@ -81,7 +114,10 @@ class ManagerActionService:
             return "Действие недоступно"
 
 
-def build_router(session_factory: async_sessionmaker[AsyncSession]) -> Router:
+def build_router(
+    session_factory: async_sessionmaker[AsyncSession],
+    topic_gateway: TelegramTopicGateway,
+) -> Router:
     router = Router(name="manager-actions")
     actions = ManagerActionService(session_factory)
 
@@ -105,11 +141,13 @@ def build_router(session_factory: async_sessionmaker[AsyncSession]) -> Router:
                 }
                 await callback.answer(labels[result.status])
             if isinstance(callback.message, Message) and result.claimed is not False:
-                assignee_name = result.assigned_to_name or callback.from_user.full_name
-                await callback.message.edit_text(
-                    format_lead_state(callback.message.html_text, result.status, assignee_name),
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=lead_keyboard(raw_lead_id, result.status),
+                if result.assigned_to_name is None:
+                    result.assigned_to_name = callback.from_user.full_name
+                await update_lead_presentation(
+                    callback.message,
+                    raw_lead_id,
+                    result,
+                    topic_gateway,
                 )
         except UnauthorizedManagerError:
             await callback.answer("Нет доступа", show_alert=True)

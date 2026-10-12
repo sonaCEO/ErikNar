@@ -31,11 +31,12 @@ async def run() -> None:
         raise RuntimeError("Telegram bot token and manager chat ID are required")
 
     bot = Bot(settings.telegram_bot_token)
+    gateway = AiogramTelegramGateway(bot, settings.telegram_manager_chat_id)
     dispatcher = Dispatcher()
-    dispatcher.include_router(build_router(session_factory))
+    dispatcher.include_router(build_router(session_factory, gateway))
     processor = OutboxProcessor(
         session_factory,
-        AiogramTelegramGateway(bot, settings.telegram_manager_chat_id),
+        gateway,
         max_attempts=settings.telegram_outbox_max_attempts,
     )
     outbox_task = asyncio.create_task(

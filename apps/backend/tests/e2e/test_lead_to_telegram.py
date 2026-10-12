@@ -23,6 +23,9 @@ class CapturingGateway(TelegramGateway):
         self.topic_names.append(name)
         return 701
 
+    async def rename_topic(self, topic_id: int, name: str) -> None:
+        raise AssertionError("publishing a new lead must not rename its topic")
+
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int:
         self.cards.append(text)
         return 901

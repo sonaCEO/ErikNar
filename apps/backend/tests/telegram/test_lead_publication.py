@@ -108,6 +108,9 @@ class RecordingGateway(TelegramGateway):
         self.topics.append(name)
         return 700 + len(self.topics)
 
+    async def rename_topic(self, topic_id: int, name: str) -> None:
+        raise AssertionError("publishing a new lead must not rename its topic")
+
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int:
         self.cards.append((topic_id, text, callback_data))
         return 900 + len(self.cards)
