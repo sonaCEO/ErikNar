@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from eriknar.catalog.enums import AvailabilityStatus
 from eriknar.catalog.models import BodyColor, ControlType, PanelColor, Product, ProductVariant
 from eriknar.db.session import get_session
+from eriknar.leads.enums import LeadStatus
 from eriknar.leads.models import Lead
 from eriknar.main import create_app
 from eriknar.outbox.processor import OutboxProcessor
@@ -31,6 +32,16 @@ class CapturingGateway(TelegramGateway):
 
     async def close_topic(self, topic_id: int) -> None:
         raise AssertionError("publishing a new lead must not close its topic")
+
+    async def edit_lead_card(
+        self,
+        topic_id: int,
+        message_id: int,
+        text: str,
+        lead_id: str,
+        status: LeadStatus,
+    ) -> None:
+        raise AssertionError("publishing a new lead must not edit its card")
 
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int:
         self.cards.append(text)

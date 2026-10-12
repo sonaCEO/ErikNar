@@ -67,6 +67,19 @@ async def schedule_lead_archive(session: AsyncSession, lead: Lead) -> None:
         )
 
 
+def schedule_lead_telegram_sync(session: AsyncSession, lead: Lead) -> None:
+    if lead.telegram_topic_id is None or lead.telegram_message_id is None:
+        return
+    session.add(
+        OutboxEvent(
+            event_type="lead.telegram_sync",
+            aggregate_type="lead",
+            aggregate_id=lead.id,
+            payload={"lead_id": str(lead.id)},
+        )
+    )
+
+
 def normalize_russian_phone(phone: str) -> str:
     digits = re.sub(r"\D", "", phone)
     if len(digits) == 10:
@@ -207,6 +220,7 @@ class LeadService:
                     new_assignee_id=user_id,
                 )
             )
+            schedule_lead_telegram_sync(self._session, lead)
         return ClaimResult(
             claimed=True,
             assigned_to_user_id=user_id,
@@ -226,6 +240,7 @@ class LeadService:
             lead.status = target
             lead.closed_at = datetime.now(UTC)
             await schedule_lead_archive(self._session, lead)
+            schedule_lead_telegram_sync(self._session, lead)
             self._session.add(
                 LeadHistory(
                     lead_id=lead.id,

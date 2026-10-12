@@ -2,7 +2,12 @@ from typing import Protocol
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
-from aiogram.exceptions import TelegramNetworkError, TelegramRetryAfter, TelegramServerError
+from aiogram.exceptions import (
+    TelegramBadRequest,
+    TelegramNetworkError,
+    TelegramRetryAfter,
+    TelegramServerError,
+)
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from eriknar.leads.enums import LeadStatus
@@ -40,6 +45,15 @@ class TelegramGateway(TelegramTopicGateway, Protocol):
 
     async def close_topic(self, topic_id: int) -> None: ...
 
+    async def edit_lead_card(
+        self,
+        topic_id: int,
+        message_id: int,
+        text: str,
+        lead_id: str,
+        status: LeadStatus,
+    ) -> None: ...
+
 
 class TransientTelegramError(ConnectionError):
     pass
@@ -70,6 +84,9 @@ class AiogramTelegramGateway:
                 message_thread_id=topic_id,
                 name=name,
             )
+        except TelegramBadRequest as exc:
+            if "not modified" not in str(exc).lower():
+                raise
         except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
             raise TransientTelegramError(str(exc)) from exc
 
@@ -108,5 +125,27 @@ class AiogramTelegramGateway:
                 chat_id=self._manager_chat_id,
                 message_thread_id=topic_id,
             )
+        except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
+            raise TransientTelegramError(str(exc)) from exc
+
+    async def edit_lead_card(
+        self,
+        topic_id: int,
+        message_id: int,
+        text: str,
+        lead_id: str,
+        status: LeadStatus,
+    ) -> None:
+        try:
+            await self._bot.edit_message_text(
+                chat_id=self._manager_chat_id,
+                message_id=message_id,
+                text=text,
+                parse_mode=ParseMode.HTML,
+                reply_markup=lead_keyboard(lead_id, status),
+            )
+        except TelegramBadRequest as exc:
+            if "not modified" not in str(exc).lower():
+                raise
         except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
             raise TransientTelegramError(str(exc)) from exc

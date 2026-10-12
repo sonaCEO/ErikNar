@@ -50,6 +50,24 @@ def upgrade() -> None:
         WHERE event_type = 'lead.archive_due'
         """
     )
+    op.execute(
+        """
+        INSERT INTO outbox_events
+            (id, event_type, aggregate_type, aggregate_id, payload, next_attempt_at)
+        SELECT
+            gen_random_uuid(),
+            'lead.archive_due',
+            'lead',
+            id,
+            jsonb_build_object('lead_id', id::text),
+            closed_at + interval '24 hours'
+        FROM leads
+        WHERE status IN ('completed', 'cancelled')
+          AND closed_at IS NOT NULL
+          AND telegram_topic_id IS NOT NULL
+        ON CONFLICT (aggregate_id) WHERE event_type = 'lead.archive_due' DO NOTHING
+        """
+    )
 
 
 def downgrade() -> None:

@@ -117,6 +117,16 @@ class RecordingGateway(TelegramGateway):
     async def close_topic(self, topic_id: int) -> None:
         raise AssertionError("publishing a new lead must not close its topic")
 
+    async def edit_lead_card(
+        self,
+        topic_id: int,
+        message_id: int,
+        text: str,
+        lead_id: str,
+        status: LeadStatus,
+    ) -> None:
+        raise AssertionError("publishing a new lead must not edit its card")
+
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int:
         self.cards.append((topic_id, text, callback_data))
         return 900 + len(self.cards)

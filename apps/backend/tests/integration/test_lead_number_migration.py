@@ -1,6 +1,6 @@
 import os
 import subprocess
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 import pytest
@@ -26,7 +26,9 @@ async def test_lead_number_migration_backfills_in_stable_order(postgres_url: str
     variant_id, customer_id = uuid4(), uuid4()
     first_id = UUID("00000000-0000-4000-8000-000000000001")
     second_id = UUID("00000000-0000-4000-8000-000000000002")
+    terminal_id = UUID("00000000-0000-4000-8000-000000000003")
     created_at = datetime(2026, 1, 1, tzinfo=UTC)
+    closed_at = datetime(2026, 1, 2, tzinfo=UTC)
 
     async with engine.begin() as connection:
         await connection.execute(
@@ -81,15 +83,22 @@ async def test_lead_number_migration_backfills_in_stable_order(postgres_url: str
             ),
             {"id": customer_id},
         )
-        for lead_id, key in ((second_id, "second"), (first_id, "first")):
+        source_rows = (
+            (second_id, "second", "new", None, None),
+            (first_id, "first", "new", None, None),
+            (terminal_id, "terminal", "completed", closed_at, 703),
+        )
+        for lead_id, key, status, lead_closed_at, topic_id in source_rows:
             await connection.execute(
                 text(
                     """
                     INSERT INTO leads
                         (id, public_id, customer_id, variant_id, source, status, snapshot,
-                         idempotency_key, request_hash, customer_name, customer_phone, created_at)
-                    VALUES (:id, :public_id, :customer_id, :variant_id, 'website', 'new',
-                            '{}'::jsonb, :key, :request_hash, 'Client', '+70000000000', :created_at)
+                         idempotency_key, request_hash, customer_name, customer_phone, created_at,
+                         closed_at, telegram_topic_id)
+                    VALUES (:id, :public_id, :customer_id, :variant_id, 'website',
+                            CAST(:status AS lead_status), '{}'::jsonb, :key, :request_hash,
+                            'Client', '+70000000000', :created_at, :closed_at, :topic_id)
                     """
                 ),
                 {
@@ -100,6 +109,9 @@ async def test_lead_number_migration_backfills_in_stable_order(postgres_url: str
                     "key": key,
                     "request_hash": (key * 64)[:64],
                     "created_at": created_at,
+                    "status": status,
+                    "closed_at": lead_closed_at,
+                    "topic_id": topic_id,
                 },
             )
 
@@ -115,9 +127,21 @@ async def test_lead_number_migration_backfills_in_stable_order(postgres_url: str
             lambda sync: {index["name"]: index for index in inspect(sync).get_indexes("leads")}
         )
         next_number = await connection.scalar(text("SELECT nextval('lead_number_seq')"))
+        archive_event = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT aggregate_id, next_attempt_at
+                    FROM outbox_events
+                    WHERE event_type = 'lead.archive_due'
+                    """
+                )
+            )
+        ).one()
 
-    assert rows == [(first_id, 1), (second_id, 2)]
+    assert rows == [(first_id, 1), (second_id, 2), (terminal_id, 3)]
     assert columns["number"]["nullable"] is False
     assert indexes["ix_leads_number"]["unique"] is True
-    assert next_number == 3
+    assert next_number == 4
+    assert archive_event == (terminal_id, closed_at + timedelta(hours=24))
     await engine.dispose()

@@ -24,6 +24,7 @@ from eriknar.leads.service import (
     LeadNotFoundError,
     LeadService,
     schedule_lead_archive,
+    schedule_lead_telegram_sync,
 )
 from eriknar.users.dependencies import PermissionDeniedError
 from eriknar.users.enums import UserRole
@@ -134,6 +135,7 @@ class AdminLeadService:
                     comment=command.comment,
                 )
             )
+            schedule_lead_telegram_sync(self._session, lead)
         return await self.get(lead_id)
 
     async def assign(
@@ -178,6 +180,7 @@ class AdminLeadService:
                     comment=command.comment,
                 )
             )
+            schedule_lead_telegram_sync(self._session, lead)
         return await self.get(lead_id)
 
     @staticmethod
