@@ -184,6 +184,7 @@ class AdminLeadService:
         return AdminLeadView(
             id=lead.id,
             public_id=lead.public_id,
+            number=lead.number,
             source=lead.source,
             status=lead.status,
             customer_name=lead.customer_name,

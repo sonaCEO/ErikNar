@@ -42,4 +42,8 @@ async def create_lead(
         ),
         idempotency_key,
     )
-    return CreateLeadResponse(public_id=result.public_id, status=result.status)
+    return CreateLeadResponse(
+        public_id=result.public_id,
+        number=result.number,
+        status=result.status,
+    )

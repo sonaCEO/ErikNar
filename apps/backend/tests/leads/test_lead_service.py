@@ -217,6 +217,8 @@ async def test_concurrent_distinct_leads_share_one_new_customer(
 
     async with factory() as session:
         assert first.public_id != second.public_id
+        assert first.number != second.number
+        assert {first.number, second.number} == {1, 2}
         assert await session.scalar(select(func.count()).select_from(Lead)) == 2
         from eriknar.customers.models import Customer
 

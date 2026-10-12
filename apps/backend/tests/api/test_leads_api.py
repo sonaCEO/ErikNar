@@ -17,6 +17,7 @@ VARIANT_ID = UUID("20000000-0000-4000-8000-000000000002")
 def _result() -> LeadResult:
     return LeadResult(
         public_id=PUBLIC_ID,
+        number=7,
         status=LeadStatus.NEW,
         snapshot=LeadSnapshot(
             product_id=UUID("30000000-0000-4000-8000-000000000003"),
@@ -71,7 +72,7 @@ async def test_create_lead_returns_public_identifier() -> None:
     status, payload = await _request(SuccessfulLeadService())
 
     assert status == 201
-    assert payload == {"public_id": str(PUBLIC_ID), "status": "new"}
+    assert payload == {"public_id": str(PUBLIC_ID), "number": 7, "status": "new"}
 
 
 @pytest.mark.anyio

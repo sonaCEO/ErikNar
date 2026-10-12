@@ -86,6 +86,7 @@ def _snapshot(variant: ProductVariant) -> LeadSnapshot:
 def _result(lead: Lead, *, created: bool) -> LeadResult:
     return LeadResult(
         public_id=lead.public_id,
+        number=lead.number,
         status=lead.status,
         snapshot=LeadSnapshot.model_validate(lead.snapshot),
         created=created,

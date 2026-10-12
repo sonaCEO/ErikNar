@@ -27,6 +27,7 @@ class LeadHistoryView(BaseModel):
 class AdminLeadView(BaseModel):
     id: UUID
     public_id: UUID
+    number: int
     source: LeadSource
     status: LeadStatus
     customer_name: str

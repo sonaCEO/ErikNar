@@ -39,6 +39,7 @@ class LeadSnapshot(BaseModel):
 
 class LeadResult(BaseModel):
     public_id: UUID
+    number: int
     status: LeadStatus
     snapshot: LeadSnapshot
     created: bool = True
@@ -53,6 +54,7 @@ class CreateLeadRequest(BaseModel):
 
 class CreateLeadResponse(BaseModel):
     public_id: UUID = Field(description="Публичный UUID заявки для отображения клиенту")
+    number: int = Field(description="Короткий последовательный номер заявки")
     status: LeadStatus
 
 

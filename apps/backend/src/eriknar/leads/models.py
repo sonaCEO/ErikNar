@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Index, String, Text, Uuid
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Index, Sequence, String, Text, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -27,6 +27,14 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     public_id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True), default=uuid4, unique=True, index=True
+    )
+    number_sequence = Sequence("lead_number_seq")
+    number: Mapped[int] = mapped_column(
+        BigInteger,
+        number_sequence,
+        server_default=number_sequence.next_value(),
+        unique=True,
+        index=True,
     )
     customer_id: Mapped[UUID] = mapped_column(ForeignKey("customers.id"))
     variant_id: Mapped[UUID] = mapped_column(ForeignKey("product_variants.id"))
