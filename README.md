@@ -49,3 +49,14 @@ Telegram-воркер запускается отдельно, когда ток
 ```bash
 docker compose --env-file .env.demo -f compose.demo.yaml --profile telegram up -d
 ```
+
+Для работы архива в `.env.demo` также указывается
+`ERIKNAR_TELEGRAM_ARCHIVE_TOPIC_ID` — ID заранее созданной темы «Архив». Активные
+заявки находятся в отдельных темах по коротким номерам, а через 24 часа после
+завершения или отклонения исходная тема закрывается.
+
+Остановка Telegram-воркера:
+
+```bash
+docker compose --env-file .env.demo -f compose.demo.yaml --profile telegram stop telegram-worker
+```
