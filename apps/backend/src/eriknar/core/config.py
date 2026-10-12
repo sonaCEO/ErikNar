@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     object_storage_health_path: str = "/health"
     telegram_bot_token: str | None = None
     telegram_manager_chat_id: int | None = None
+    telegram_archive_topic_id: int | None = None
     telegram_outbox_poll_seconds: float = 1.0
     telegram_outbox_max_attempts: int = 8
     jwt_secret: str = "development-only-secret-change-before-production"
@@ -32,7 +33,12 @@ class Settings(BaseSettings):
     login_max_failures: int = 5
     login_window_minutes: int = 15
 
-    @field_validator("telegram_bot_token", "telegram_manager_chat_id", mode="before")
+    @field_validator(
+        "telegram_bot_token",
+        "telegram_manager_chat_id",
+        "telegram_archive_topic_id",
+        mode="before",
+    )
     @classmethod
     def empty_telegram_setting_is_none(cls, value: object) -> object:
         if isinstance(value, str) and not value.strip():

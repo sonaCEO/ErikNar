@@ -19,7 +19,12 @@ from eriknar.leads.enums import LeadStatus
 from eriknar.leads.history import LeadHistory
 from eriknar.leads.models import Lead
 from eriknar.leads.schemas import LeadSnapshot
-from eriknar.leads.service import InvalidLeadTransitionError, LeadNotFoundError, LeadService
+from eriknar.leads.service import (
+    InvalidLeadTransitionError,
+    LeadNotFoundError,
+    LeadService,
+    schedule_lead_archive,
+)
 from eriknar.users.dependencies import PermissionDeniedError
 from eriknar.users.enums import UserRole
 from eriknar.users.models import User
@@ -116,6 +121,7 @@ class AdminLeadService:
             lead.status = command.status
             lead.closed_at = now
             lead.updated_at = now
+            await schedule_lead_archive(self._session, lead)
             self._session.add(
                 LeadHistory(
                     lead_id=lead.id,

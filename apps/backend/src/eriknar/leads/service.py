@@ -1,9 +1,10 @@
 import hashlib
 import json
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from eriknar.catalog.enums import AvailabilityStatus
@@ -43,6 +44,27 @@ class LeadNotFoundError(ValueError):
 
 class InvalidLeadTransitionError(ValueError):
     pass
+
+
+async def schedule_lead_archive(session: AsyncSession, lead: Lead) -> None:
+    if lead.closed_at is None:
+        raise ValueError("terminal lead must have closed_at")
+    existing = await session.scalar(
+        select(OutboxEvent.id).where(
+            OutboxEvent.event_type == "lead.archive_due",
+            OutboxEvent.aggregate_id == lead.id,
+        )
+    )
+    if existing is None:
+        session.add(
+            OutboxEvent(
+                event_type="lead.archive_due",
+                aggregate_type="lead",
+                aggregate_id=lead.id,
+                payload={"lead_id": str(lead.id)},
+                next_attempt_at=lead.closed_at + timedelta(hours=24),
+            )
+        )
 
 
 def normalize_russian_phone(phone: str) -> str:
@@ -203,6 +225,7 @@ class LeadService:
             previous_status = lead.status
             lead.status = target
             lead.closed_at = datetime.now(UTC)
+            await schedule_lead_archive(self._session, lead)
             self._session.add(
                 LeadHistory(
                     lead_id=lead.id,

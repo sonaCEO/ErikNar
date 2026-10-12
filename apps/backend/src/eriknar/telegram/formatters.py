@@ -82,3 +82,28 @@ def format_lead_state(text: str, status: LeadStatus, assignee_name: str | None) 
     if assignee_name:
         lines.append(f"<b>Ответственная:</b> {escape(assignee_name)}")
     return base + "\n".join(lines)
+
+
+def format_archive_card(
+    *,
+    number: int,
+    status: LeadStatus,
+    customer_name: str,
+    phone: str,
+    snapshot: Mapping[str, object],
+    assignee_name: str | None,
+    created_at: str,
+    closed_at: str,
+) -> str:
+    status_label = "Завершена" if status is LeadStatus.COMPLETED else "Отклонена"
+    lines = [
+        f"<b>{format_lead_number(number)} · {status_label}</b>",
+        f"<b>Клиент:</b> {escape(customer_name)}",
+        f"<b>Телефон:</b> <code>{escape(phone)}</code>",
+        f"<b>Модель:</b> {escape(str(snapshot['product_name']))}",
+        f"<b>Комплектация:</b> <code>{escape(str(snapshot['sku']))}</code>",
+        f"<b>Ответственная:</b> {escape(assignee_name or 'Не назначена')}",  # noqa: RUF001
+        f"<b>Создана:</b> {escape(created_at)}",
+        f"<b>Закрыта:</b> {escape(closed_at)}",
+    ]
+    return "\n".join(lines)

@@ -65,6 +65,8 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     assigned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     telegram_topic_id: Mapped[int | None] = mapped_column(BigInteger)
     telegram_message_id: Mapped[int | None] = mapped_column(BigInteger)
+    telegram_archive_message_id: Mapped[int | None] = mapped_column(BigInteger)
+    telegram_archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     customer: Mapped[Customer] = relationship()
     variant: Mapped[ProductVariant] = relationship()

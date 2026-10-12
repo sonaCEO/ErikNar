@@ -36,15 +36,25 @@ class TelegramGateway(TelegramTopicGateway, Protocol):
 
     async def send_lead_card(self, topic_id: int, text: str, callback_data: str) -> int: ...
 
+    async def send_archive_card(self, text: str) -> int: ...
+
+    async def close_topic(self, topic_id: int) -> None: ...
+
 
 class TransientTelegramError(ConnectionError):
     pass
 
 
 class AiogramTelegramGateway:
-    def __init__(self, bot: Bot, manager_chat_id: int) -> None:
+    def __init__(
+        self,
+        bot: Bot,
+        manager_chat_id: int,
+        archive_topic_id: int | None = None,
+    ) -> None:
         self._bot = bot
         self._manager_chat_id = manager_chat_id
+        self._archive_topic_id = archive_topic_id
 
     async def create_forum_topic(self, name: str) -> int:
         try:
@@ -77,3 +87,26 @@ class AiogramTelegramGateway:
         except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
             raise TransientTelegramError(str(exc)) from exc
         return message.message_id
+
+    async def send_archive_card(self, text: str) -> int:
+        if self._archive_topic_id is None:
+            raise RuntimeError("Telegram archive topic ID is not configured")
+        try:
+            message = await self._bot.send_message(
+                chat_id=self._manager_chat_id,
+                message_thread_id=self._archive_topic_id,
+                text=text,
+                parse_mode=ParseMode.HTML,
+            )
+        except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
+            raise TransientTelegramError(str(exc)) from exc
+        return message.message_id
+
+    async def close_topic(self, topic_id: int) -> None:
+        try:
+            await self._bot.close_forum_topic(
+                chat_id=self._manager_chat_id,
+                message_thread_id=topic_id,
+            )
+        except (TelegramNetworkError, TelegramRetryAfter, TelegramServerError) as exc:
+            raise TransientTelegramError(str(exc)) from exc

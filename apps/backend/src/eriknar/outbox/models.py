@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
-from sqlalchemy import Boolean, DateTime, Enum, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, Index, Integer, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,6 +19,14 @@ class OutboxStatus(StrEnum):
 
 class OutboxEvent(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "outbox_events"
+    __table_args__ = (
+        Index(
+            "uq_outbox_lead_archive_due",
+            "aggregate_id",
+            unique=True,
+            postgresql_where=text("event_type = 'lead.archive_due'"),
+        ),
+    )
 
     event_type: Mapped[str] = mapped_column(String(100), index=True)
     aggregate_type: Mapped[str] = mapped_column(String(100))

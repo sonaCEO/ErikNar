@@ -9,7 +9,7 @@ from eriknar.leads.models import Lead
 from eriknar.outbox.models import OutboxEvent, OutboxStatus
 from eriknar.outbox.repository import OutboxRepository
 from eriknar.telegram.client import TelegramGateway
-from eriknar.telegram.formatters import format_lead_card, format_topic_name
+from eriknar.telegram.formatters import format_archive_card, format_lead_card, format_topic_name
 
 
 class OutboxProcessor:
@@ -32,19 +32,19 @@ class OutboxProcessor:
         async with self._session_factory() as session, session.begin():
             return await OutboxRepository(session).claim_next(self._processing_timeout_seconds)
 
-    async def _load_lead(self, event_id: UUID) -> Lead:
+    async def _load_event_and_lead(self, event_id: UUID) -> tuple[str, Lead]:
         async with self._session_factory() as session:
             event = await session.get(OutboxEvent, event_id)
-            if event is None or event.event_type != "lead.created":
+            if event is None or event.event_type not in {"lead.created", "lead.archive_due"}:
                 raise LookupError("unsupported outbox event")
             lead = await session.scalar(
                 select(Lead)
                 .where(Lead.id == event.aggregate_id)
-                .options(selectinload(Lead.customer))
+                .options(selectinload(Lead.customer), selectinload(Lead.assigned_to))
             )
             if lead is None:
                 raise LookupError("lead not found")
-            return lead
+            return event.event_type, lead
 
     async def _begin_external_operation(self, event_id: UUID) -> None:
         async with self._session_factory() as session, session.begin():
@@ -85,6 +85,32 @@ class OutboxProcessor:
             event.completed_at = datetime.now(UTC)
             event.last_error = None
 
+    async def _save_archive_message(
+        self, event_id: UUID, lead_id: UUID, message_id: int
+    ) -> None:
+        async with self._session_factory() as session, session.begin():
+            lead = await session.get(Lead, lead_id, with_for_update=True)
+            event = await session.get(OutboxEvent, event_id, with_for_update=True)
+            if lead is None or event is None:
+                raise LookupError("archive delivery state not found")
+            if lead.telegram_archive_message_id is None:
+                lead.telegram_archive_message_id = message_id
+            event.requires_review = False
+            event.last_error = None
+
+    async def _complete_archive(self, event_id: UUID, lead_id: UUID) -> None:
+        async with self._session_factory() as session, session.begin():
+            lead = await session.get(Lead, lead_id, with_for_update=True)
+            event = await session.get(OutboxEvent, event_id, with_for_update=True)
+            if lead is None or event is None:
+                raise LookupError("archive delivery state not found")
+            lead.telegram_archived_at = datetime.now(UTC)
+            event.status = OutboxStatus.COMPLETED
+            event.requires_review = False
+            event.processing_started_at = None
+            event.completed_at = datetime.now(UTC)
+            event.last_error = None
+
     async def _fail(
         self, event_id: UUID, error: Exception, *, requires_review: bool = False
     ) -> None:
@@ -112,12 +138,8 @@ class OutboxProcessor:
             event.status = OutboxStatus.PENDING
             event.next_attempt_at = datetime.now(UTC) + timedelta(seconds=delay)
 
-    async def run_once(self) -> bool:
-        event_id = await self._claim()
-        if event_id is None:
-            return False
+    async def _process_created(self, event_id: UUID, lead: Lead) -> None:
         try:
-            lead = await self._load_lead(event_id)
             if lead.telegram_topic_id is None:
                 await self._begin_external_operation(event_id)
                 try:
@@ -136,7 +158,7 @@ class OutboxProcessor:
                     await self._save_topic(event_id, lead.id, topic_id)
                 except Exception as exc:
                     await self._fail(event_id, exc, requires_review=True)
-                    return True
+                    return
                 lead.telegram_topic_id = topic_id
             if lead.telegram_message_id is None:
                 text = format_lead_card(
@@ -160,9 +182,65 @@ class OutboxProcessor:
                     await self._complete(event_id, lead.id, message_id)
                 except Exception as exc:
                     await self._fail(event_id, exc, requires_review=True)
-                    return True
+                    return
             else:
                 await self._complete(event_id, lead.id, lead.telegram_message_id)
+        except Exception as exc:
+            await self._fail(event_id, exc)
+
+    async def _process_archive(self, event_id: UUID, lead: Lead) -> None:
+        if lead.telegram_topic_id is None or lead.closed_at is None:
+            await self._fail(event_id, LookupError("lead has no terminal Telegram topic"))
+            return
+        if lead.telegram_archive_message_id is None:
+            text = format_archive_card(
+                number=lead.number,
+                status=lead.status,
+                customer_name=lead.customer_name,
+                phone=lead.customer_phone,
+                snapshot=lead.snapshot,
+                assignee_name=lead.assigned_to.name if lead.assigned_to else None,
+                created_at=lead.created_at.isoformat(),
+                closed_at=lead.closed_at.isoformat(),
+            )
+            await self._begin_external_operation(event_id)
+            try:
+                message_id = await self._gateway.send_archive_card(text)
+            except Exception as exc:
+                await self._clear_external_operation(event_id)
+                await self._fail(event_id, exc)
+                return
+            try:
+                await self._save_archive_message(event_id, lead.id, message_id)
+            except Exception as exc:
+                await self._fail(event_id, exc, requires_review=True)
+                return
+            lead.telegram_archive_message_id = message_id
+        if lead.telegram_archived_at is not None:
+            await self._complete_archive(event_id, lead.id)
+            return
+        await self._begin_external_operation(event_id)
+        try:
+            await self._gateway.close_topic(lead.telegram_topic_id)
+        except Exception as exc:
+            await self._clear_external_operation(event_id)
+            await self._fail(event_id, exc)
+            return
+        try:
+            await self._complete_archive(event_id, lead.id)
+        except Exception as exc:
+            await self._fail(event_id, exc, requires_review=True)
+
+    async def run_once(self) -> bool:
+        event_id = await self._claim()
+        if event_id is None:
+            return False
+        try:
+            event_type, lead = await self._load_event_and_lead(event_id)
+            if event_type == "lead.created":
+                await self._process_created(event_id, lead)
+            else:
+                await self._process_archive(event_id, lead)
         except Exception as exc:
             await self._fail(event_id, exc)
         return True

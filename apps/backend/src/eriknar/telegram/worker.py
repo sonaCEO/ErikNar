@@ -31,7 +31,11 @@ async def run() -> None:
         raise RuntimeError("Telegram bot token and manager chat ID are required")
 
     bot = Bot(settings.telegram_bot_token)
-    gateway = AiogramTelegramGateway(bot, settings.telegram_manager_chat_id)
+    gateway = AiogramTelegramGateway(
+        bot,
+        settings.telegram_manager_chat_id,
+        settings.telegram_archive_topic_id,
+    )
     dispatcher = Dispatcher()
     dispatcher.include_router(build_router(session_factory, gateway))
     processor = OutboxProcessor(
