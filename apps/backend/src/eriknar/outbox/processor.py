@@ -9,7 +9,7 @@ from eriknar.leads.models import Lead
 from eriknar.outbox.models import OutboxEvent, OutboxStatus
 from eriknar.outbox.repository import OutboxRepository
 from eriknar.telegram.client import TelegramGateway
-from eriknar.telegram.formatters import format_lead_card
+from eriknar.telegram.formatters import format_lead_card, format_topic_name
 
 
 class OutboxProcessor:
@@ -121,7 +121,14 @@ class OutboxProcessor:
             if lead.telegram_topic_id is None:
                 await self._begin_external_operation(event_id)
                 try:
-                    topic_id = await self._gateway.create_forum_topic(f"Заявка {lead.public_id}")
+                    topic_id = await self._gateway.create_forum_topic(
+                        format_topic_name(
+                            lead.number,
+                            lead.status,
+                            str(lead.snapshot["model_code"]),
+                            None,
+                        )
+                    )
                 except Exception as exc:
                     await self._clear_external_operation(event_id)
                     raise exc
@@ -133,7 +140,7 @@ class OutboxProcessor:
                 lead.telegram_topic_id = topic_id
             if lead.telegram_message_id is None:
                 text = format_lead_card(
-                    public_id=str(lead.public_id),
+                    number=lead.number,
                     customer_name=lead.customer_name,
                     phone=lead.customer_phone,
                     snapshot=lead.snapshot,

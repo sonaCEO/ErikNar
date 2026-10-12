@@ -9,13 +9,13 @@ from eriknar.leads.models import Lead
 from eriknar.outbox.models import OutboxEvent, OutboxStatus
 from eriknar.outbox.processor import OutboxProcessor
 from eriknar.telegram.client import TelegramGateway, lead_keyboard
-from eriknar.telegram.formatters import format_lead_card, format_lead_state
+from eriknar.telegram.formatters import format_lead_card, format_lead_state, format_topic_name
 from tests.factories import seed_lead_with_event
 
 
 def test_lead_card_contains_snapshot_and_escapes_customer_text() -> None:
     message = format_lead_card(
-        public_id="10000000-0000-4000-8000-000000000001",
+        number=7,
         customer_name="Анна <важно>",
         phone="+7 999 000-00-00",
         snapshot={
@@ -32,7 +32,8 @@ def test_lead_card_contains_snapshot_and_escapes_customer_text() -> None:
         comment="Позвонить после 18:00 & уточнить",
     )
 
-    assert "10000000-0000-4000-8000-000000000001" in message
+    assert "№0007" in message
+    assert "10000000-0000-4000-8000-000000000001" not in message
     assert "Анна &lt;важно&gt;" in message
     assert "+7 999 000-00-00" in message
     assert "Лесенка &amp; Комфорт" in message
@@ -43,6 +44,28 @@ def test_lead_card_contains_snapshot_and_escapes_customer_text() -> None:
     assert "Сенсорная" in message
     assert "12 600 ₽" in message
     assert "Позвонить после 18:00 &amp; уточнить" in message
+
+
+@pytest.mark.parametrize(
+    ("status", "assignee_name", "expected"),
+    [
+        (LeadStatus.NEW, None, "🆕 №0007 · Новая · Модель B"),
+        (LeadStatus.IN_PROGRESS, "Сона", "🟡 №0007 · В работе · Сона"),  # noqa: RUF001
+        (LeadStatus.COMPLETED, "Сона", "✅ №0007 · Завершена"),
+        (LeadStatus.CANCELLED, "Сона", "❌ №0007 · Отклонена"),
+    ],
+)
+def test_topic_name_describes_lead_state(
+    status: LeadStatus, assignee_name: str | None, expected: str
+) -> None:
+    assert format_topic_name(7, status, "B", assignee_name) == expected
+
+
+def test_topic_name_truncates_only_long_assignee_to_telegram_limit() -> None:
+    name = format_topic_name(7, LeadStatus.IN_PROGRESS, "B", "С" * 200)  # noqa: RUF001
+
+    assert len(name) == 128
+    assert name.startswith("🟡 №0007 · В работе · ")  # noqa: RUF001
 
 
 def test_lead_keyboard_only_offers_actions_valid_for_current_status() -> None:

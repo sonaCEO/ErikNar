@@ -5,6 +5,30 @@ from typing import cast
 from eriknar.leads.enums import LeadStatus
 
 _STATUS_MARKER = "\n\n<b>Статус:</b>"
+_TOPIC_NAME_LIMIT = 128
+
+
+def format_lead_number(number: int) -> str:
+    return f"№{number:04d}"
+
+
+def format_topic_name(
+    number: int,
+    status: LeadStatus,
+    model_code: str,
+    assignee_name: str | None,
+) -> str:
+    lead_number = format_lead_number(number)
+    if status is LeadStatus.NEW:
+        return f"🆕 {lead_number} · Новая · Модель {model_code}"
+    if status is LeadStatus.COMPLETED:
+        return f"✅ {lead_number} · Завершена"
+    if status is LeadStatus.CANCELLED:
+        return f"❌ {lead_number} · Отклонена"
+
+    prefix = f"🟡 {lead_number} · В работе · "  # noqa: RUF001
+    assignee = assignee_name or "Не назначена"  # noqa: RUF001
+    return prefix + assignee[: _TOPIC_NAME_LIMIT - len(prefix)]
 
 
 def _name(snapshot: Mapping[str, object], key: str) -> str:
@@ -20,14 +44,14 @@ def _price(price_minor: int, currency: str) -> str:
 
 def format_lead_card(
     *,
-    public_id: str,
+    number: int,
     customer_name: str,
     phone: str,
     snapshot: Mapping[str, object],
     comment: str,
 ) -> str:
     lines = [
-        f"<b>Новая заявка</b> <code>{escape(public_id)}</code>",
+        f"<b>Новая заявка {format_lead_number(number)}</b>",
         "",
         f"<b>Клиент:</b> {escape(customer_name)}",
         f"<b>Телефон:</b> <code>{escape(phone)}</code>",

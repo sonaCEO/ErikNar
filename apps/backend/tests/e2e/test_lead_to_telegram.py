@@ -103,6 +103,8 @@ async def test_catalog_lead_and_telegram_form_one_vertical_slice(
         assert lead.snapshot["price_minor"] == variant["price_minor"]
     assert len(gateway.topic_names) == 1
     assert len(gateway.cards) == 1
+    assert gateway.topic_names == [f"🆕 №{lead.number:04d} · Новая · Модель B"]
+    assert f"№{lead.number:04d}" in gateway.cards[0]
     assert "Лесенка" in gateway.cards[0]
     assert "12 600 ₽" in gateway.cards[0]
     assert "Позвонить после 18:00" in gateway.cards[0]
