@@ -1,38 +1,30 @@
 import {navigation} from "./data.js";
-import logo from "../../../assets/logo.png";
 import LayoutContainer from "../../grid/layout-container.jsx";
+import Logo from "../../global/logo/logo.jsx";
+import s from "./header.module.css";
 
 export default function Header() {
     return (
-        <header>
+        <header className={s.header}>
             <LayoutContainer>
+                <div className={s.wrapper}>
+                    <Logo/>
 
-                <div>
-                    <a href="/">
-                        <img src={logo} alt="ErikNarLogo"/>
-                        <span>
-            <span>ErikNar</span>
-            <span>дизайнерское тепло</span>
-          </span>
-                    </a>
-
-                    <div>
+                    <div className={s.inner}>
                         <nav>
                             <ul>
                                 {navigation.map((item) => (
                                     <li key={item.id}>
                                         <a href={item.url}>{item.name}</a>
-                                    </li>
-                                ))}
+                                    </li>))}
                             </ul>
                         </nav>
-
-                        <a href="tel:+79999999999">+7 999 999-99-99</a>
-                        <button>Оставть заявку</button>
+                        <div className={s.actions}>
+                            <a href="tel:+79999999999">+7 999 999-99-99</a>
+                            <button>Оставть заявку</button>
+                        </div>
                     </div>
                 </div>
             </LayoutContainer>
-
-        </header>
-    );
+        </header>);
 }

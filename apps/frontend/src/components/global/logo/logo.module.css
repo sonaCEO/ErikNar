@@ -1,0 +1,21 @@
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.image {
+    width: auto;
+    height: 40px;
+    max-width: 50px;
+}
+
+.description {
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    height: 100%;
+    text-decoration: none;
+}
