@@ -1,7 +1,10 @@
+@import "../../../css/vars/vars.css";
+@import "../../../css/vars/typography.css";
+
 .header {
     width: 100%;
-    height: 80px;
-    background-color: red;
+    /*height: 80px;*/
+    /*background-color: beige;*/
     position: fixed;
     left: 0;
     top: 0;
@@ -13,12 +16,15 @@
     height: 100%;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 24px;
 }
 
 .inner {
     display: flex;
     justify-content: flex-end;
+    flex: 1;
+    gap: 35px;
 }
 
 .inner > nav > ul {
@@ -27,6 +33,29 @@
     gap: 28px;
 }
 
-.inner > nav > ul > li {
+.inner > nav > ul > li > a {
+    color: var(--ink);
+    font-weight: var(--fw-semibold);
+    font-size: 12px;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.actions > span > a {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: var(--fw-semibold);
+    color: var(--ink);
+}
+
+a > svg {
+    width: 18px;
+    height: 18px;
     color: var(--ink);
 }

@@ -1,3 +1,6 @@
+@import "../../../css/vars/vars.css";
+@import "../../../css/vars/typography.css";
+
 .logo {
     display: flex;
     align-items: center;
@@ -13,6 +16,21 @@
 .description {
     display: flex;
     flex-direction: column;
+}
+
+.description > span:first-child {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: var(--fw-bold);
+    letter-spacing: .11em;
+}
+
+.description > span:last-child {
+    color: var(--color-logo);
+    font-size: 8px;
+    font-weight: var(--fw-medium);
+    letter-spacing: .13em;
+    margin-top: 2px;
 }
 
 a {

@@ -7,7 +7,7 @@ function Logo() {
       <img className={s.image} src={logo} alt="ErikNarLogo" />
       <span className={s.description}>
         <span>ErikNar</span>
-        <span>дизайнерское тепло!</span>
+        <span>дизайнерское тепло</span>
       </span>
     </a>
   );
