@@ -1,15 +1,19 @@
-@import "../../css/vars/vars.css";
-@import "../../css/vars/typography.css";
+/* Импорты не нужны:) У нас в глобальных стилях переменные, они попадают и так */
 
-.default {
+.button {
     padding: 0 17px;
     min-height: 40px;
-    color: var(--white);
-    background-color: var(--charcoal);
+    color: var(--charcoal);
+    background-color: transparent;
     font-size: 12px;
     font-weight: var(--fw-semibold);
     border: none;
     cursor: pointer;
+}
+
+.black {
+    color: var(--white);
+    background-color: var(--charcoal);
 }
 
 .ginger {
@@ -17,4 +21,5 @@
     padding: 0 24px;
     min-height: 48px;
     background-color: var(--copper);
+    color: var(--white);
 }
