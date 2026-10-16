@@ -1,15 +1,15 @@
+import clsx from 'clsx';
 import s from './button.module.css'
 
-function Button({ children, onClick, variant = 'black' }) {
-		return (
-				<button
-						/* Базовый класс лучше button использовать и ты забыла props добавить - variant, чтобы мы могли менять тип кнопки) */
-						className={`${s.button} ${variant === 'ginger' ? s.ginger : s.black}`}
-						onClick={onClick}
-				>
-						{children}
-				</button>
-		);
+function Button({children, onClick, variant='black'}) {
+    return (
+        <button
+            className={clsx(s.button, s[variant])}
+            onClick={onClick}
+        >
+            {children}
+        </button>
+    );
 }
 
 export default Button;
