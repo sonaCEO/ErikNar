@@ -1,28 +1,43 @@
 .button {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
-    padding: 0 17px;
-    min-height: 40px;
+    padding: 8px 16px;
     color: var(--charcoal);
     background-color: transparent;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: var(--fw-semibold);
     border: none;
     cursor: pointer;
+    border-radius: 24px;
+
+    @media(min-width: 768px) {
+        border-radius: 32px;
+        font-size: 16px;
+    }
 }
 
 .black {
     color: var(--white);
     background-color: var(--charcoal);
-    position: relative;
 }
 
 .ginger {
-    padding: 0 24px;
-    min-height: 48px;
     background-color: var(--copper);
     color: var(--white);
+}
+
+.sm {
+    padding: 4px 12px;
+}
+
+.md {
+    padding: 8px 16px;
+}
+
+.lg {
+    padding: 12px 24px;
 }
 
 .burger {
