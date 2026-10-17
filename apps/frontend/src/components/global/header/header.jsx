@@ -29,6 +29,7 @@ export default function Header() {
                             <Button variant="black">Оставить заявку</Button>
                         </div>
                     </div>
+                    <Button variant="burger"><span></span></Button>
                 </div>
             </LayoutContainer>
         </header>);

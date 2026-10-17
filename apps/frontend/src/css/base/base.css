@@ -71,6 +71,11 @@ h6 {
   text-wrap: balance;
 }
 
+ul, ol {
+    padding: 0;
+    margin: 0;
+}
+
 p {
   text-wrap: pretty;
 }

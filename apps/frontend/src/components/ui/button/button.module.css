@@ -1,4 +1,7 @@
 .button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     padding: 0 17px;
     min-height: 40px;
     color: var(--charcoal);
@@ -12,6 +15,7 @@
 .black {
     color: var(--white);
     background-color: var(--charcoal);
+    position: relative;
 }
 
 .ginger {
@@ -21,31 +25,39 @@
     color: var(--white);
 }
 
-/*.sm {*/
-/*    min-height: 60px;*/
-/*}*/
+.burger {
+    display: flex;
+    min-height: auto;
+    width: 36px;
+    height: 20px;
+    position: relative;
+    padding: 0;
 
-/*.md {*/
-/*    min-height: 100px;*/
-/*}*/
+    span, &::before, &::after {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 2px;
+        border-radius: 4px;
+        background-color: var(--charcoal);
+        position: absolute;
+        left: 0;
+    }
 
-/*.lg {*/
-/*    min-height: 150px;*/
-/*}*/
+    &::before {
+        top: 0;
+    }
 
-/*.animated {*/
-/*    background-color: #8bb477;*/
-/*    animation: spin 2s linear infinite;*/
-/*}*/
+    span {
+        top: 50%;
+        transform: translateY(-50%);
+    }
 
-/*@keyframes spin {*/
-/*    0%, 20%, 50%, 80%, 100% {*/
-/*        transform: translateY(0);*/
-/*    }*/
-/*    40% {*/
-/*        transform: translateY(-12px);*/
-/*    }*/
-/*    60% {*/
-/*        transform: translateY(-6px);*/
-/*    }*/
-/*}*/
+    &::after {
+        bottom: 0;
+    }
+
+    @media(min-width: 992px) {
+        display: none;
+    }
+}
