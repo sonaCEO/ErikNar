@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import s from './Text.module.css';
+import s from './text.module.css';
 
 export function Text({as: Component = 'p', variant = 'base', children, ...props}) {
     return (
