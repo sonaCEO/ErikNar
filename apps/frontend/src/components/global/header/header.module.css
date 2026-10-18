@@ -25,10 +25,14 @@
     justify-content: flex-end;
     align-items: center;
     flex: 1;
-    gap: 35px;
+    gap: 56px;
 
     @media (min-width: 992px) {
         display: flex;
+    }
+
+    @media (min-width: 1200px) {
+        gap: 72px;
     }
 }
 
@@ -77,26 +81,26 @@
     gap: 18px;
 }
 
-.actions > span > a {
+.phone {
     display: flex;
     align-items: center;
     gap: 7px;
     font-size: 14px;
-    font-weight: var(--fw-semibold);
-    color: var(--ink);
-    transition: opacity ease-in var(--tr250);
+    font-weight: var(--fw-regular);
+    color: var(--muted);
+    transition: color ease-in var(--tr250);
 
     &:hover {
-        opacity: var(--opacity7);
+        color: var(--ink);
     }
 
-    @media(min-width: 768px) {
+    @media (min-width: 768px) {
         font-size: 16px;
     }
-}
 
-a > svg {
-    width: 18px;
-    height: 18px;
-    color: var(--ink);
+    svg {
+        width: 18px;
+        height: 18px;
+        color: currentColor;
+    }
 }

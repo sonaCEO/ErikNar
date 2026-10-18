@@ -21,11 +21,10 @@ export default function Header() {
                             </ul>
                         </nav>
                         <div className={s.actions}>
-                            <span>
-                                <a href="tel:+79999999999">
-                                    <Phone/>
-                                    +7 999 999-99-99</a>
-                            </span>
+                            <a className={s.phone} href="tel:+79999999999">
+                                <Phone/>
+                                +7 999 999-99-99
+                            </a>
                             <Button variant="black" size='md'>Оставить заявку</Button>
                         </div>
                     </div>
