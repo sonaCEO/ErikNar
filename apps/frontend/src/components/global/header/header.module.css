@@ -6,8 +6,10 @@
     position: fixed;
     left: 0;
     top: 0;
+    z-index: 100;
     padding: 20px 0;
     border: none;
+    background-color: var(--main-bg);
 }
 
 .wrapper {
