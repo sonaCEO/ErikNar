@@ -49,6 +49,23 @@
     padding: 16px 24px;
 }
 
+.underline {
+    padding: 0 0 4px;
+    border-radius: 0;
+    color: var(--charcoal);
+    background-color: transparent;
+    border-bottom: 1px solid var(--charcoal);
+    transition: opacity ease var(--tr250);
+
+    &:hover:not(:active) {
+        opacity: var(--opacity7);
+    }
+
+    &:active {
+        opacity: var(--opacity5);
+    }
+}
+
 .burger {
     display: flex;
     min-height: auto;
