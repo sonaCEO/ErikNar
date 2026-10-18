@@ -1,7 +1,7 @@
 import {navigation} from "./data.js";
-import LayoutContainer from "../../grid/layout-container/layout-container.jsx";
-import Logo from "../../global/logo/logo.jsx";
-import {Button} from "../../ui/button/button.jsx";
+import LayoutContainer from "../../grid/layout-container/layout-container";
+import Logo from "../../global/logo/logo";
+import {Button} from "../../ui/button/button";
 import s from "./header.module.css";
 import {Phone} from 'lucide-react';
 
