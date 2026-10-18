@@ -52,13 +52,12 @@
         bottom: -7px;
         height: 1px;
         background-color: var(--copper);
-        transition: width ease-in .25s, height ease-in 1s;
+        transition: width ease-in .25s;
     }
 
     &:hover {
         &::after {
             width: 100%;
-            height: 4px;
         }
     }
 }
