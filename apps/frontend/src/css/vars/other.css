@@ -2,6 +2,8 @@
 	/* Transition */
 	--tr150: 150ms;
 	--tr250: 250ms;
+
 	/* Opacity */
+	--opacity5: 0.5;
 	--opacity7: 0.7;
 }

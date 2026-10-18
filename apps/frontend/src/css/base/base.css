@@ -25,6 +25,13 @@ body {
 	-webkit-font-smoothing: antialiased;
 	background-color: var(--main-bg);
 	font-family: var(--ff);
+	margin: 0;
+}
+
+main {
+	width: 100%;
+	flex: 1;
+	min-height: 0;
 }
 
 img,
@@ -95,6 +102,7 @@ h6 {
 
 :where(h1, h2, h3, h4, h5, h6) {
 	font-family: var(--ff-title);
+	line-height: 1;
 	text-wrap: balance;
 }
 
@@ -113,6 +121,8 @@ p {
 }
 
 #root {
+	display: flex;
+	flex-direction: column;
 	isolation: isolate;
 	min-height: 100dvh;
 }
