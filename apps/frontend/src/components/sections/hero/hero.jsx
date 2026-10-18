@@ -24,7 +24,7 @@ export function Hero() {
 												/>
 
 												<div className={s.actions}>
-														<Button variant="black">Смотреть каталог</Button>
+														<Button variant="black" size="lg">Смотреть каталог</Button>
 														<Button variant="underline">Получить консультацию</Button>
 												</div>
 

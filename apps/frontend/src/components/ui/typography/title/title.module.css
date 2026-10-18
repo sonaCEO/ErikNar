@@ -1,19 +1,17 @@
 h1 {
     margin: 22px 0 28px;
     font-size: 95px;
-    font-weight: var(--fw-regular);
 }
 
 h2 {
     margin: 12px 0 0;
     font-size: 58px;
-    font-weight: var(--fw-regular);
 }
 
 h1, h2 {
     strong {
         color: var(--copper);
-        font-weight: var(--fw-regular);
+        font-weight: inherit;
     }
 }
 
