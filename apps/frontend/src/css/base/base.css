@@ -24,6 +24,13 @@ body {
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	background-color: var(--main-bg);
+	background-image: linear-gradient(
+		160deg,
+		var(--cream-soft) 0%,
+		var(--main-bg) 38%,
+		var(--cream-deep) 100%
+	);
+	background-attachment: fixed;
 	font-family: var(--ff);
 	margin: 0;
 }
