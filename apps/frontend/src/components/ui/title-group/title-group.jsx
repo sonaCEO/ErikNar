@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import {Title} from '../typography/title/title.jsx';
-import {Text} from '../typography/text/text.jsx';
+import {Title} from '../typography/title/title';
+import {Text} from '../typography/text/text';
 import s from "./title-group.module.css";
 
 export function TitleGroup(
