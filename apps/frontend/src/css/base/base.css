@@ -107,8 +107,9 @@ p {
 }
 
 :focus-visible {
-	outline: 2px solid CanvasText;
+	outline: 2px solid var(--copper);
 	outline-offset: 2px;
+	border-radius: 8px;
 }
 
 #root {

@@ -21,6 +21,15 @@
 .black {
     color: var(--white);
     background-color: var(--charcoal);
+    transition: transform ease var(--tr250), background-color ease var(--tr250), border-radius ease-in var(--tr150);
+
+    &:hover:not(:active) {
+        background-color: var(--charcoal-hover);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
 }
 
 .ginger {
@@ -33,11 +42,11 @@
 }
 
 .md {
-    padding: 8px 16px;
+    padding: 12px 20px;
 }
 
 .lg {
-    padding: 12px 24px;
+    padding: 16px 24px;
 }
 
 .burger {

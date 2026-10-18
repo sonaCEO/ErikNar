@@ -26,7 +26,7 @@ export default function Header() {
                                     <Phone/>
                                     +7 999 999-99-99</a>
                             </span>
-                            <Button variant="black" size='sm'>Оставить заявку</Button>
+                            <Button variant="black" size='md'>Оставить заявку</Button>
                         </div>
                     </div>
                     <Button variant="burger"><span></span></Button>

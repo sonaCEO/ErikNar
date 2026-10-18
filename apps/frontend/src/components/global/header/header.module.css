@@ -32,14 +32,22 @@
 
 .inner > nav > ul {
     display: flex;
-    gap: 28px;
+    gap: 20px;
+
+    @media(min-width: 1200px) {
+        gap: 28px;
+    }
 }
 
 .inner > nav > ul > li > a {
     color: var(--ink);
     font-weight: var(--fw-semibold);
-    font-size: 12px;
+    font-size: 14px;
     position: relative;
+
+    @media(min-width: 768px) {
+        font-size: 16px;
+    }
 
     &::after {
         content: '';
@@ -71,9 +79,18 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: var(--fw-semibold);
     color: var(--ink);
+    transition: opacity ease-in var(--tr250);
+
+    &:hover {
+        opacity: var(--opacity7);
+    }
+
+    @media(min-width: 768px) {
+        font-size: 16px;
+    }
 }
 
 a > svg {
