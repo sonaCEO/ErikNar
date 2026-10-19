@@ -10,6 +10,9 @@
     --line: #dedcd5;
     --mist: #c9c5bb;
     --ink: #282824;
-    --muted: #77766f;
+    --muted: #5f5e58;
     --stone: #6b645c;
+    --success: #2f6b3c;
+    --warning: #7a5a28;
+    --danger: #8a3535;
 }
