@@ -1,0 +1,24 @@
+.badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 12px;
+	font-size: 12px;
+	font-weight: var(--fw-semibold);
+	border-radius: 6px;
+	white-space: nowrap;
+	text-transform: capitalize;
+	color: var(--white);
+}
+
+.in_stock {
+	background-color: var(--success);
+}
+
+.made_to_order {
+	background-color: var(--warning);
+}
+
+.out_of_stock {
+	background-color: var(--danger);
+}
