@@ -8,7 +8,16 @@ h2 {
     font-size: 58px;
 }
 
-h1, h2 {
+h3 {
+    margin: 0;
+    font-size: 23px;
+
+    @media (min-width: 768px) {
+        font-size: 26px;
+    }
+}
+
+h1, h2, h3 {
     strong {
         color: var(--copper);
         font-weight: inherit;

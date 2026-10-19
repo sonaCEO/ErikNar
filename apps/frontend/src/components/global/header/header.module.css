@@ -65,7 +65,7 @@
         bottom: -7px;
         height: 1px;
         background-color: var(--copper);
-        transition: width ease-in .25s;
+        transition: width ease var(--tr250);
     }
 
     &:hover {

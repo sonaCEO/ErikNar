@@ -60,13 +60,13 @@
 }
 
 .mini {
-    padding: 6px 12px;
+    padding: 8px 12px;
     font-size: 12px;
     border-radius: 24px;
     line-height: 1.2;
 
     @media(min-width: 768px) {
-        padding: 6px 14px;
+        padding: 8px 16px;
     }
 }
 
@@ -75,7 +75,7 @@
     font-size: 13px;
 
     @media(min-width: 768px) {
-        padding: 10px 18px;
+        padding: 12px 20px;
         font-size: 14px;
     }
 }
