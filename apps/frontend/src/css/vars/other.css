@@ -6,4 +6,11 @@
 	/* Opacity */
 	--opacity5: 0.5;
 	--opacity7: 0.7;
+
+	/* Section */
+	--section-padding: 60px 0;
+
+	@media (min-width: 768px) {
+		--section-padding: 90px 0;
+	}
 }
