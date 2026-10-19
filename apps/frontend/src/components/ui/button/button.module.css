@@ -43,16 +43,16 @@
     border-radius: 24px;
     transition: background-color ease var(--tr250), border-color ease var(--tr250), color ease var(--tr250);
 
-    &:hover:not(:active):not(.active) {
+    &:not(.active):hover:not(:active) {
         background-color: var(--cream-soft);
         border-color: var(--mist);
     }
 
-    &:active:not(.active) {
+    &:not(.active):active {
         background-color: var(--cream-deep);
     }
 
-    .active {
+    &.active {
         color: var(--white);
         background-color: var(--charcoal);
         border-color: var(--charcoal);
