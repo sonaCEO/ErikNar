@@ -163,39 +163,52 @@
 
     ul {
         display: flex;
-        gap: 28px;
+        gap: 4px;
         margin: 0;
         padding: 0;
     }
 }
 
-.nav a,
-.drawerNav a {
+.link {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 10px;
     color: var(--ink);
     font-weight: var(--fw-semibold);
     font-size: 16px;
-    position: relative;
     text-decoration: none;
+    background-color: transparent;
+    transition:
+        color ease var(--tr250),
+        background-color ease var(--tr250);
 
-    &::after {
-        content: '';
-        position: absolute;
-        display: block;
-        width: 0;
-        left: 0;
-        bottom: -8px;
-        height: 1px;
-        background-color: var(--copper);
-        transition: width ease var(--tr250);
-    }
-
-    &:hover::after {
-        width: 100%;
+    &:hover {
+        color: var(--copper);
+        background-color: rgb(169 132 85 / 0.12);
     }
 }
 
-.drawerNav a {
+.linkActive {
+    color: var(--copper);
+    background-color: rgb(169 132 85 / 0.18);
+
+    &:hover {
+        color: var(--copper-hover);
+        background-color: rgb(169 132 85 / 0.22);
+    }
+}
+
+.drawerNav .link {
+    padding: 4px 0;
+    border-radius: 0;
     font-size: 22px;
+    background-color: transparent;
+
+    &:hover,
+    &.linkActive {
+        background-color: transparent;
+    }
 }
 
 .actions {

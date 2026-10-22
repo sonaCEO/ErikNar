@@ -132,9 +132,9 @@ export function ProductModal({
 														<Text as="p" variant="strong">
 																{formatPriceMinor(variant.price_minor, variant.currency)}
 														</Text>
-														<Text as="span" variant="caption">
+														<Badge variant="warranty">
 																{formatWarrantyMonths(product.warranty_months)}
-														</Text>
+														</Badge>
 												</div>
 
 												<div className={s.field}>

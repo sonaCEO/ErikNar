@@ -24,3 +24,7 @@
 .out_of_stock {
 	background-color: var(--danger);
 }
+
+.warranty {
+	background-color: var(--copper);
+}

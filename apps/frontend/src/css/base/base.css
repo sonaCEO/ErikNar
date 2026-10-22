@@ -16,6 +16,7 @@ html {
 	-webkit-text-size-adjust: 100%;
 	hanging-punctuation: first allow-end;
 	scrollbar-gutter: stable;
+	scroll-padding-top: 88px;
 }
 
 body {
