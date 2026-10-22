@@ -7,6 +7,21 @@
     padding: 20px 0;
     border: none;
     background-color: transparent;
+    transition:
+        transform ease var(--tr250),
+        padding ease-in var(--tr250),
+        background-color ease var(--tr250),
+        box-shadow ease var(--tr250);
+}
+
+.active {
+    background-color: color-mix(in srgb, var(--cream-soft) 92%, transparent);
+    box-shadow: 0 1px 0 var(--line);
+    padding: 8px 0;
+}
+
+.hidden {
+    transform: translateY(-100%);
 }
 
 .wrapper {

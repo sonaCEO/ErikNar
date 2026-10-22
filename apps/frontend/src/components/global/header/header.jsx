@@ -1,3 +1,5 @@
+import clsx from "clsx";
+import {useHeaderScroll} from "../../../hooks/use-header-scroll";
 import {navigation} from "./data.js";
 import LayoutContainer from "../../grid/layout-container/layout-container";
 import Logo from "../../global/logo/logo";
@@ -5,8 +7,10 @@ import {Button} from "../../ui/button/button";
 import s from "./header.module.css";
 
 export default function Header() {
+		const {active, hidden} = useHeaderScroll();
+
 		return (
-				<header className={s.header}>
+				<header className={clsx(s.header, active && s.active, hidden && s.hidden)}>
 						<LayoutContainer>
 								<div className={s.wrapper}>
 										<Logo/>
