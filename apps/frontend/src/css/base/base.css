@@ -110,8 +110,9 @@ h6 {
 
 :where(h1, h2, h3, h4, h5, h6) {
 	font-family: var(--ff-title);
-	font-weight: var(--fw-regular);
-	line-height: 1.3;
+	font-weight: var(--fw-semibold);
+	line-height: 1.2;
+	letter-spacing: -0.02em;
 	text-wrap: balance;
 }
 
