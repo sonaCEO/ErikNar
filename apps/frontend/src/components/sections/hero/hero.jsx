@@ -1,4 +1,5 @@
 import LayoutContainer from "../../grid/layout-container/layout-container";
+import {useModal} from "../../modals/modal-context";
 import {TitleGroup} from "../../ui/title-group/title-group";
 import {Button} from "../../ui/button/button";
 import {Fact} from "../../ui/fact/fact";
@@ -6,6 +7,12 @@ import {heroData} from "./data";
 import s from "./hero.module.css";
 
 export function Hero() {
+		const {openModal} = useModal();
+
+		function openConsultation() {
+				openModal("consultation");
+		}
+
 		return (
 				<section className={s.hero}>
 						<div className={s.stage}>
@@ -21,8 +28,20 @@ export function Hero() {
 														/>
 
 														<div className={s.actions}>
-																<Button variant="soft" size="lg">Смотреть каталог</Button>
-																<Button variant="black" size="lg">Получить консультацию</Button>
+																<Button
+																		variant="soft"
+																		size="lg"
+																		onClick={() => {
+																				document.getElementById("collection")?.scrollIntoView({
+																						behavior: "smooth",
+																				});
+																		}}
+																>
+																		Смотреть каталог
+																</Button>
+																<Button variant="black" size="lg" onClick={openConsultation}>
+																		Получить консультацию
+																</Button>
 														</div>
 												</div>
 										</div>
@@ -46,7 +65,22 @@ export function Hero() {
 										<div className={s.barInner}>
 												<div className={s.barLead}>
 														<p className={s.barTitle}>{heroData.barTitle}</p>
-														<Button variant="ginger" size="sm">Подробнее</Button>
+														<Button
+																variant="ginger"
+																size="sm"
+																onClick={() => openModal("details", {
+																		subtitle: "Преимущества",
+																		title: "Тепло, которому можно доверять",
+																		paragraphs: [
+																				"Мягкий нагрев без перегрева — комфортно в ванной каждый день.",
+																				"Матовые покрытия от спокойного крема до глубокого графита.",
+																				"Долгий срок службы и гарантия 2 года на каждое изделие.",
+																		],
+																		facts: heroData.facts,
+																})}
+														>
+																Подробнее
+														</Button>
 												</div>
 
 												<div className={s.barFacts}>

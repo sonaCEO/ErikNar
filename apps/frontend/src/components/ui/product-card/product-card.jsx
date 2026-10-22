@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import {availabilityLabel} from "../../../catalog/availability";
+import {useModal} from "../../modals/modal-context";
 import {Badge} from "../badge/badge";
 import {Button} from "../button/button";
 import {Text} from "../typography/text/text";
@@ -15,6 +16,7 @@ export function ProductCard({
 		sizes = [],
 		availabilityStatus,
 }) {
+		const {openModal} = useModal();
 		const activeColor = colors[0];
 		const statusLabel = availabilityLabel[availabilityStatus];
 
@@ -104,7 +106,21 @@ export function ProductCard({
 										</div>
 								)}
 
-								<Button variant="black" size="sm" className={s.cta}>
+								<Button
+										variant="black"
+										size="sm"
+										className={s.cta}
+										onClick={() => openModal("details", {
+												subtitle: "Модель",
+												title: name,
+												text: description,
+												image,
+												priceFrom,
+												colors,
+												sizes,
+												availabilityStatus,
+										})}
+								>
 										Подробнее
 								</Button>
 						</div>

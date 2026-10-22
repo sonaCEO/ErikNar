@@ -1,5 +1,6 @@
 import {phone} from "../../../data/site";
 import LayoutContainer from "../../grid/layout-container/layout-container";
+import {useModal} from "../../modals/modal-context";
 import {Button} from "../../ui/button/button";
 import {Text} from "../../ui/typography/text/text";
 import {TitleGroup} from "../../ui/title-group/title-group";
@@ -7,6 +8,8 @@ import {ctaData} from "./data";
 import s from "./cta.module.css";
 
 export function Cta() {
+		const {openModal} = useModal();
+
 		return (
 				<section className={s.cta} id="cta">
 						<LayoutContainer>
@@ -26,7 +29,11 @@ export function Cta() {
 														{phone.label}
 												</Text>
 
-												<Button variant="ginger" size="lg">
+												<Button
+														variant="ginger"
+														size="lg"
+														onClick={() => openModal("consultation")}
+												>
 														{ctaData.button}
 												</Button>
 										</div>

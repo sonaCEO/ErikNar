@@ -1,4 +1,5 @@
 import LayoutContainer from "../../grid/layout-container/layout-container";
+import {useModal} from "../../modals/modal-context";
 import {Button} from "../../ui/button/button";
 import {TitleGroup} from "../../ui/title-group/title-group";
 import {Text} from "../../ui/typography/text/text";
@@ -6,6 +7,8 @@ import {customMeta, customSteps} from "./data";
 import s from "./custom.module.css";
 
 export function Custom() {
+		const {openModal} = useModal();
+
 		return (
 				<section className={s.custom} id="custom">
 						<LayoutContainer>
@@ -46,7 +49,11 @@ export function Custom() {
 														))}
 												</ol>
 
-												<Button variant="ginger" size="lg">
+												<Button
+														variant="ginger"
+														size="lg"
+														onClick={() => openModal("consultation")}
+												>
 														{customMeta.button}
 												</Button>
 										</div>

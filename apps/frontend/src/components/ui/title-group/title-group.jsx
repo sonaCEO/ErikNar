@@ -13,10 +13,11 @@ export function TitleGroup(
 				text,
 				textVariant = "base",
 				align = "left",
+				className,
 		}
 ) {
 		return (
-				<div className={clsx(s.group, s[align])}>
+				<div className={clsx(s.group, s[align], className)}>
 						{subtitle && (
 								<Text as="span" variant={subtitleVariant}>{subtitle}</Text>
 						)}

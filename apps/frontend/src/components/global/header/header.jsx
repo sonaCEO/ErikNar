@@ -4,6 +4,7 @@ import {Phone} from "lucide-react";
 import {RemoveScroll} from "react-remove-scroll";
 import {useHeaderScroll} from "../../../hooks/use-header-scroll";
 import {navigation, phone} from "../../../data/site";
+import {useModal} from "../../modals/modal-context";
 import LayoutContainer from "../../grid/layout-container/layout-container";
 import Logo from "../logo/logo";
 import {Button} from "../../ui/button/button";
@@ -17,13 +18,23 @@ function NavLinks() {
 		));
 }
 
-function Cta() {
-		return <Button variant="black" size="md">Оставить заявку</Button>;
+function Cta({onClick}) {
+		return (
+				<Button variant="black" size="md" onClick={onClick}>
+						Оставить заявку
+				</Button>
+		);
 }
 
 export default function Header() {
 		const [menuOpen, setMenuOpen] = useState(false);
 		const {active, hidden} = useHeaderScroll({paused: menuOpen});
+		const {openModal} = useModal();
+
+		function openConsultation() {
+				setMenuOpen(false);
+				openModal("consultation");
+		}
 
 		return (
 				<header
@@ -51,7 +62,7 @@ export default function Header() {
 																{phone.label}
 														</span>
 												</a>
-												<Cta/>
+												<Cta onClick={openConsultation}/>
 										</div>
 								</div>
 						</RemoveScroll>
@@ -67,7 +78,7 @@ export default function Header() {
 										</nav>
 
 										<div className={s.actions}>
-												<Cta/>
+												<Cta onClick={openConsultation}/>
 										</div>
 
 										<Button
