@@ -1,4 +1,4 @@
-import productImage from "../../../assets/hero-img.jpg";
+import productImage from "../../../assets/product/product-img.jpg";
 import {AvailabilityStatus} from "../../../catalog/availability";
 
 export const PAGE_SIZE = 10;

@@ -1,4 +1,4 @@
-import logo from "../../../assets/logo.png";
+import logo from "../../../assets/logo/logo.png";
 import s from "./logo.module.css";
 
 export default function Logo({withDescription = true}) {

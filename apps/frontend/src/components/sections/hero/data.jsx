@@ -1,4 +1,4 @@
-import heroImage from "../../../assets/1.jpg";
+import heroImage from "../../../assets/hero/hero-img.jpg";
 
 export const heroData = {
 		subtitle: "Сделано в России · Гарантия 2 года",
