@@ -27,11 +27,8 @@
     flex: 1;
     gap: 56px;
 
-    @media (min-width: 992px) {
-        display: flex;
-    }
-
     @media (min-width: 1200px) {
+        display: flex;
         gap: 72px;
     }
 }

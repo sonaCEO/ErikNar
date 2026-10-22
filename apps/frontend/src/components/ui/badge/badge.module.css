@@ -2,6 +2,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	align-self: flex-start;
+	width: fit-content;
 	padding: 4px 12px;
 	font-size: 12px;
 	font-weight: var(--fw-semibold);
