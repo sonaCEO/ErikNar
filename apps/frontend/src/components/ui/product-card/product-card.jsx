@@ -56,7 +56,7 @@ export function ProductCard({
 
 								{description && (
 										<div className={s.field}>
-												<Text as="span" variant="subtitle">Описание</Text>
+												<Text as="span" variant="label">Описание</Text>
 												<div className={s.description}>
 														<Text as="p" variant="muted">{description}</Text>
 												</div>
@@ -65,7 +65,7 @@ export function ProductCard({
 
 								{colors.length > 0 && (
 										<div className={s.field}>
-												<Text as="span" variant="subtitle">
+												<Text as="span" variant="label">
 														Цвет{activeColor?.name ? ` (${activeColor.name})` : ""}
 												</Text>
 												<div className={s.swatches} aria-hidden="true">
@@ -87,7 +87,7 @@ export function ProductCard({
 
 								{sizes.length > 0 && (
 										<div className={s.field}>
-												<Text as="span" variant="subtitle">Размер</Text>
+												<Text as="span" variant="label">Размер</Text>
 												<div className={s.chips} role="group" aria-label="Размер">
 														{sizes.map((size, index) => (
 																<Button

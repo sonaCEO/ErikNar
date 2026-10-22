@@ -73,6 +73,14 @@
 		overflow: hidden;
 		background: var(--cream-deep);
 
+		@media (min-width: 375px) {
+			min-height: 300px;
+		}
+
+		@media (min-width: 480px) {
+			min-height: 460px;
+		}
+
 		@media (min-width: 768px) {
 				position: absolute;
 				top: 0;

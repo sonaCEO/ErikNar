@@ -24,6 +24,17 @@
 	}
 }
 
+.label {
+	text-transform: capitalize;
+	font-weight: var(--fw-bold);
+	font-size: 12px;
+	color: var(--charcoal);
+
+	@media (min-width: 768px) {
+		font-size: 14px;
+	}
+}
+
 .muted {
 	font-size: 14px;
 	color: var(--muted);
