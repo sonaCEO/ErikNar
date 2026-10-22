@@ -54,6 +54,7 @@
 .price {
 		flex: 0 1 auto;
 		max-width: 45%;
+		flex-shrink: 0;
 		min-width: 0;
 		text-align: right;
 		overflow-wrap: anywhere;
