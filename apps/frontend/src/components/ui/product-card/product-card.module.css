@@ -1,0 +1,101 @@
+.card {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		padding: 16px;
+		border-radius: 16px;
+		background: var(--white);
+}
+
+.media {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+		border-radius: 12px;
+		background: var(--cream-soft);
+}
+
+.image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+}
+
+.body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: 16px;
+		min-width: 0;
+}
+
+.head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+}
+
+.name {
+		min-width: 0;
+}
+
+.price {
+		flex-shrink: 0;
+		white-space: nowrap;
+}
+
+.field {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		min-width: 0;
+}
+
+.description {
+		min-width: 0;
+		min-height: 48px;
+}
+
+.swatches {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+}
+
+.swatch {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		border: 1px solid transparent;
+}
+
+.swatchActive {
+		border-color: var(--charcoal);
+}
+
+.swatchFill {
+		display: block;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		border: 1px solid var(--line);
+		box-sizing: border-box;
+}
+
+.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+}
+
+.cta {
+		width: 100%;
+		margin-top: auto;
+		padding-top: 8px;
+}
