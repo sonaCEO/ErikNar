@@ -15,14 +15,38 @@ export function ProductCard({
 		colors = [],
 		sizes = [],
 		availabilityStatus,
+		product,
 }) {
 		const {openModal} = useModal();
 		const activeColor = colors[0];
 		const statusLabel = availabilityLabel[availabilityStatus];
 
+		function openDetails() {
+				if (product) {
+						openModal("product", {product});
+						return;
+				}
+
+				openModal("details", {
+						subtitle: "Модель",
+						title: name,
+						text: description,
+						image,
+						priceFrom,
+						colors,
+						sizes,
+						availabilityStatus,
+				});
+		}
+
 		return (
 				<article className={s.card}>
-						<div className={s.media}>
+						<button
+								type="button"
+								className={s.media}
+								aria-label={name ? `Подробнее: ${name}` : "Подробнее"}
+								onClick={openDetails}
+						>
 								{image?.src && (
 										<img
 											className={s.image}
@@ -34,7 +58,7 @@ export function ProductCard({
 											decoding="async"
 										/>
 								)}
-						</div>
+						</button>
 
 						<div className={s.body}>
 								{statusLabel && (
@@ -110,16 +134,7 @@ export function ProductCard({
 										variant="black"
 										size="sm"
 										className={s.cta}
-										onClick={() => openModal("details", {
-												subtitle: "Модель",
-												title: name,
-												text: description,
-												image,
-												priceFrom,
-												colors,
-												sizes,
-												availabilityStatus,
-										})}
+										onClick={openDetails}
 								>
 										Подробнее
 								</Button>

@@ -8,10 +8,20 @@
 }
 
 .media {
+		display: block;
+		width: 100%;
+		padding: 0;
 		overflow: hidden;
 		aspect-ratio: 1;
+		border: 0;
 		border-radius: 12px;
 		background: var(--cream-soft);
+		cursor: pointer;
+		transition: opacity var(--tr250) ease;
+
+		&:hover {
+				opacity: 0.92;
+		}
 }
 
 .image {

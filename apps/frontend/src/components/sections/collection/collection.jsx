@@ -58,16 +58,17 @@ export function Collection() {
 										</div>
 
 										<div className={s.grid}>
-												{items.map((product) => (
+												{items.map((item) => (
 														<ProductCard
-															key={product.id}
-															image={product.image}
-															name={product.name}
-															priceFrom={product.priceFrom}
-															description={product.description}
-															colors={product.colors}
-															sizes={product.sizes}
-															availabilityStatus={product.availabilityStatus}
+															key={item.id}
+															image={item.image}
+															name={item.name}
+															priceFrom={item.priceFrom}
+															description={item.description}
+															colors={item.colors}
+															sizes={item.sizes}
+															availabilityStatus={item.availabilityStatus}
+															product={item.product}
 														/>
 												))}
 										</div>
