@@ -5,12 +5,21 @@ import s from "./title-group.module.css";
 
 export function TitleGroup(
 		{
-				subtitle, title, titleVariant = "black", titleLevel = 1, text, textVariant = "base", align = "left"
+				subtitle,
+				subtitleVariant = "subtitle",
+				title,
+				titleVariant = "black",
+				titleLevel = 1,
+				text,
+				textVariant = "base",
+				align = "left",
 		}
 ) {
 		return (
 				<div className={clsx(s.group, s[align])}>
-						<Text as="span" variant="subtitle">{subtitle}</Text>
+						{subtitle && (
+								<Text as="span" variant={subtitleVariant}>{subtitle}</Text>
+						)}
 
 						<Title level={titleLevel} variant={titleVariant}>
 								{title}

@@ -23,12 +23,12 @@ export default function Footer() {
 
 										<div className={s.brand}>
 												<Logo withDescription={false}/>
-												<Text as="p" variant="caption" className={s.lead}>
+												<Text as="p" variant="muted" className={s.lead}>
 														{footerCopy.text}
 												</Text>
 										</div>
 
-										<Text as="p" variant="caption">
+										<Text as="p" variant="muted">
 												© {year} {footerCopy.copyright}
 										</Text>
 								</div>

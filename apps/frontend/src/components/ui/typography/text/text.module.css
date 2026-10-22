@@ -2,6 +2,7 @@
 	min-width: 0;
 	line-height: 1.1;
 	overflow-wrap: break-word;
+	text-wrap: balance;
 }
 
 .base {
@@ -58,5 +59,20 @@
 	font-size: 13px;
 	font-weight: var(--fw-regular);
 	color: var(--mist);
+}
+
+.white {
+	font-size: 20px;
+	font-weight: var(--fw-bold);
+	color: var(--white);
+	transition: opacity ease var(--tr250);
+
+	@media (min-width: 768px) {
+		font-size: 24px;
+	}
+
+	&:hover {
+		opacity: var(--opacity7);
+	}
 }
 

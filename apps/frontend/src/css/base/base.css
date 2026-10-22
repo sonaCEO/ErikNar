@@ -115,7 +115,12 @@ h6 {
 	overflow-wrap: break-word;
 }
 
-:where(h1, h2, h3, h4, h5, h6) {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	font-family: var(--ff-title);
 	font-weight: var(--fw-semibold);
 	line-height: 1.2;
@@ -124,7 +129,7 @@ h6 {
 }
 
 p {
-	text-wrap: pretty;
+	text-wrap: balance;
 }
 
 :focus:not(:focus-visible) {

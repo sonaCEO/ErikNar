@@ -1,0 +1,33 @@
+.cta {
+		width: 100%;
+		padding: var(--section-padding);
+		background-color: var(--charcoal);
+}
+
+.inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 40px;
+		max-width: 900px;
+		margin: 0 auto;
+
+		@media (min-width: 768px) {
+				gap: 48px;
+		}
+}
+
+.actions {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 20px;
+		width: 100%;
+
+		@media (min-width: 768px) {
+				flex-direction: row;
+				gap: 40px;
+				width: auto;
+		}
+}
