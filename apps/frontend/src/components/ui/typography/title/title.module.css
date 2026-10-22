@@ -1,26 +1,48 @@
 h1 {
-    margin: 22px 0 28px;
-    font-size: 95px;
+    margin: 0;
+    font-size: 40px;
+    line-height: 1.15;
+
+    @media (min-width: 768px) {
+        margin: 16px 0 20px;
+        font-size: 64px;
+    }
+
+    @media (min-width: 992px) {
+        margin: 22px 0 28px;
+        font-size: 90px;
+        line-height: 1;
+    }
 }
 
 h2 {
     margin: 12px 0 0;
-    font-size: 58px;
+    font-size: 32px;
+    line-height: 1.15;
+
+    @media (min-width: 768px) {
+        font-size: 48px;
+    }
+
+    @media (min-width: 992px) {
+        font-size: 58px;
+        line-height: 1;
+    }
 }
 
 h3 {
     margin: 0;
-    font-size: 23px;
+    font-size: 18px;
+    line-height: 1.2;
 
     @media (min-width: 768px) {
-        font-size: 26px;
+        font-size: 20px;
     }
 }
 
 h1, h2, h3 {
     min-width: 0;
     overflow-wrap: break-word;
-    word-break: break-word;
 
     strong {
         color: var(--copper);
