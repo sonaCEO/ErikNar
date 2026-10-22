@@ -1,5 +1,6 @@
 import {Hero} from "../../components/sections/hero/hero";
 import {Collection} from "../../components/sections/collection/collection";
+import {Advantages} from "../../components/sections/advantages/advantages";
 import {Custom} from "../../components/sections/custom/custom";
 import {Spaces} from "../../components/sections/spaces/spaces";
 import {Testimonials} from "../../components/sections/testimonials/testimonials";
@@ -10,6 +11,7 @@ export function Home() {
 				<>
 						<Hero />
 						<Collection />
+						<Advantages />
 						<Custom />
 						<Spaces />
 						<Testimonials />
