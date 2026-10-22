@@ -1,0 +1,96 @@
+.gallery {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+	min-width: 0;
+}
+
+.stage {
+	margin: 0;
+	aspect-ratio: 1;
+	overflow: hidden;
+	border-radius: 16px;
+	background: var(--cream-soft);
+}
+
+.image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: center;
+}
+
+.thumbs {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	gap: 6px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	overflow-x: auto;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+.thumb {
+	display: block;
+	flex: 0 0 auto;
+	width: 52px;
+	height: 52px;
+	padding: 0;
+	overflow: hidden;
+	border: 0;
+	border-radius: 10px;
+	background: var(--cream-soft);
+	cursor: pointer;
+	opacity: 0.55;
+	transition: opacity var(--tr250) ease, transform var(--tr150) ease;
+
+	&:hover {
+		opacity: 0.85;
+	}
+
+	&:active {
+		transform: scale(0.96);
+	}
+}
+
+.thumbActive {
+	opacity: 1;
+	transform: scale(1.05);
+}
+
+.thumbImage {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+}
+
+.compact {
+	gap: 6px;
+
+	.stage {
+		aspect-ratio: 1;
+		border-radius: 12px;
+	}
+
+	.thumbs {
+		gap: 5px;
+	}
+
+	.thumb {
+		width: 36px;
+		height: 36px;
+		border-radius: 7px;
+	}
+}
