@@ -4,11 +4,13 @@ const MOBILE_MQ = "(max-width: 1199px)";
 const ACTIVE_OFFSET = 8;
 const HIDE_OFFSET = 64;
 
-export function useHeaderScroll() {
+export function useHeaderScroll({paused = false} = {}) {
 		const [active, setActive] = useState(false);
 		const [hidden, setHidden] = useState(false);
 
 		useEffect(() => {
+				if (paused) return;
+
 				let lastY = window.scrollY;
 
 				function onScroll() {
@@ -26,15 +28,12 @@ export function useHeaderScroll() {
 				}
 
 				onScroll();
-
 				window.addEventListener("scroll", onScroll, {passive: true});
-				window.addEventListener("resize", onScroll);
 
 				return () => {
 						window.removeEventListener("scroll", onScroll);
-						window.removeEventListener("resize", onScroll);
 				};
-		}, []);
+		}, [paused]);
 
 		return {active, hidden};
 }
