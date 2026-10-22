@@ -1,0 +1,45 @@
+.field {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+	width: 100%;
+	min-width: 0;
+}
+
+.input {
+	width: 100%;
+	min-width: 0;
+	padding: 14px 16px;
+	color: var(--charcoal);
+	background: var(--cream-soft);
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	font-size: 14px;
+	line-height: 1.3;
+	outline: none;
+	transition: border-color ease var(--tr150);
+
+	@media (min-width: 768px) {
+		padding: 16px 18px;
+		font-size: 16px;
+	}
+
+	&::placeholder {
+		color: var(--stone);
+		opacity: 1;
+	}
+
+	&:hover {
+		border-color: var(--mist);
+	}
+
+	&:focus {
+		border-color: var(--copper);
+	}
+
+	&:disabled {
+		opacity: var(--opacity5);
+		cursor: not-allowed;
+	}
+}
