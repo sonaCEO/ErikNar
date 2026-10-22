@@ -2,7 +2,7 @@ import heroImage from "../../../assets/1.jpg";
 
 export const heroData = {
 		subtitle: "Сделано в России · Гарантия 2 года",
-		title: <>Тепло в <strong>идеальной</strong> форме</>,
+		title: <>Тепло<br />в&nbsp;<strong>идеальной</strong> форме</>,
 		text: "Дизайнерские электрические полотенцесушители, которые превращают ежедневный комфорт в часть интерьера.",
 		image: {
 				src: heroImage,
