@@ -136,48 +136,62 @@
 
 .burger {
     display: flex;
+    align-items: center;
+    justify-content: center;
     min-height: auto;
-    width: 36px;
-    height: 20px;
+    width: 44px;
+    height: 44px;
     position: relative;
     padding: 0;
-    border: 0;
-    transition: opacity ease var(--tr250), transform ease var(--tr250);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background-color: var(--cream-soft);
+    box-shadow: 0 1px 0 var(--line);
+    transition:
+        opacity ease var(--tr250),
+        transform ease var(--tr250),
+        background-color ease var(--tr250),
+        border-color ease var(--tr250);
 
-    span, &::before, &::after {
+    span,
+    &::before,
+    &::after {
         content: "";
         display: block;
-        width: 100%;
+        width: 20px;
         height: 2px;
-        border-radius: 4px;
+        border-radius: 2px;
         background-color: var(--charcoal);
         position: absolute;
-        left: 0;
+        left: 50%;
+        translate: -50% 0;
     }
 
     &::before {
-        top: 0;
+        top: 14px;
     }
 
     span {
         top: 50%;
-        transform: translateY(-50%);
+        translate: -50% -50%;
+        width: 16px;
     }
 
     &::after {
-        bottom: 0;
+        bottom: 14px;
+        width: 18px;
     }
 
     &:hover:not(:active) {
-        opacity: var(--opacity7);
+        background-color: var(--cream-soft);
+        border-color: var(--mist);
     }
 
     &:active {
-        transform: scale(0.95);
-        opacity: var(--opacity5);
+        transform: scale(0.96);
     }
 
-    @media(min-width: 1200px) {
+    @media (min-width: 1200px) {
         display: none;
     }
 }
