@@ -1,4 +1,3 @@
-import {useState} from "react";
 import clsx from "clsx";
 import {availabilityLabel} from "../../../catalog/availability";
 import {Badge} from "../badge/badge";
@@ -16,10 +15,8 @@ export function ProductCard({
 		sizes = [],
 		availabilityStatus,
 }) {
-		const [sizeIndex, setSizeIndex] = useState(0);
 		const activeColor = colors[0];
 		const statusLabel = availabilityLabel[availabilityStatus];
-		const safeSizeIndex = sizeIndex < sizes.length ? sizeIndex : 0;
 
 		return (
 				<article className={s.card}>
@@ -97,8 +94,8 @@ export function ProductCard({
 																	key={size}
 																	variant="soft"
 																	size="mini"
-																	active={index === safeSizeIndex}
-																	onClick={() => setSizeIndex(index)}
+																	active={index === 0}
+																	tabIndex={-1}
 																>
 																		{size}
 																</Button>

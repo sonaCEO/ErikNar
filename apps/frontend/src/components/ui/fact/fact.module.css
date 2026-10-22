@@ -45,3 +45,19 @@
 	line-height: 1.3;
 	color: var(--stone);
 }
+
+.inverse {
+	max-width: none;
+
+	.value {
+		color: var(--white);
+	}
+
+	.unit {
+		color: var(--cream-soft);
+	}
+
+	.label {
+		color: rgb(255 255 255 / 0.78);
+	}
+}

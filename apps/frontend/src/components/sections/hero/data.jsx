@@ -1,4 +1,4 @@
-import heroImage from "../../../assets/hero-img.jpg";
+import heroImage from "../../../assets/1.jpg";
 
 export const heroData = {
 		subtitle: "Сделано в России · Гарантия 2 года",
@@ -10,9 +10,10 @@ export const heroData = {
 				width: 1600,
 				height: 2000,
 		},
+		barTitle: "Преимущества",
 		facts: [
 				{value: "60", unit: "°C", label: "безопасный нагрев"},
 				{value: "5", unit: "цветов", label: "матовых покрытий"},
 				{value: "10", unit: "лет", label: "срок службы"},
 		],
-}
+};
