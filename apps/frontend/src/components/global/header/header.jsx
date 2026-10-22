@@ -11,16 +11,17 @@ export default function Header() {
 								<div className={s.wrapper}>
 										<Logo/>
 
-										<div className={s.inner}>
-												<nav>
-														<ul>
-																{navigation.map((item) => (
-																		<li key={item.id}>
-																				<a href={item.url}>{item.name}</a>
-																		</li>
-																))}
-														</ul>
-												</nav>
+										<nav className={s.nav} aria-label="Основная навигация">
+												<ul>
+														{navigation.map((item) => (
+																<li key={item.id}>
+																		<a href={item.url}>{item.name}</a>
+																</li>
+														))}
+												</ul>
+										</nav>
+
+										<div className={s.actions}>
 												<Button variant="black" size="md">Оставить заявку</Button>
 										</div>
 
