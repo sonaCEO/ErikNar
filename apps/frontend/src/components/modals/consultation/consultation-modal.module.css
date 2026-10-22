@@ -1,0 +1,31 @@
+.content {
+	display: flex;
+	flex-direction: column;
+	gap: 28px;
+	padding-right: 28px;
+
+	@media (min-width: 768px) {
+		gap: 32px;
+		padding-right: 32px;
+	}
+}
+
+.heading {
+	gap: 16px;
+
+	@media (min-width: 768px) {
+		gap: 20px;
+	}
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	width: 100%;
+}
+
+.submit {
+	width: 100%;
+	margin-top: 4px;
+}

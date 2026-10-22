@@ -1,0 +1,163 @@
+.dialog {
+	max-width: 520px;
+}
+
+.dialog.withMedia {
+	max-width: 560px;
+	padding: 0;
+	overflow: hidden;
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-width: 0;
+}
+
+.media {
+	margin: 0;
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	overflow: hidden;
+	background: var(--cream-soft);
+}
+
+.image {
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: center;
+}
+
+.body {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 28px;
+	width: 100%;
+	min-width: 0;
+
+	@media (min-width: 768px) {
+		gap: 32px;
+	}
+}
+
+.dialog.withMedia .body {
+	padding: 28px 24px 32px;
+
+	@media (min-width: 768px) {
+		padding: 32px 36px 40px;
+	}
+}
+
+.head {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	width: 100%;
+	padding-right: 36px;
+}
+
+.heading {
+	width: 100%;
+	gap: 12px;
+
+	@media (min-width: 768px) {
+		gap: 16px;
+	}
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	li {
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+
+		&::before {
+			content: "";
+			flex-shrink: 0;
+			width: 6px;
+			height: 6px;
+			margin-top: 0.45em;
+			border-radius: 50%;
+			background: var(--copper);
+		}
+	}
+}
+
+.tiles {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	gap: 20px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	@media (min-width: 480px) {
+		gap: 28px;
+	}
+}
+
+.tile {
+	display: flex;
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.fact {
+	flex: none;
+	width: 100%;
+	max-width: none;
+	min-width: 0;
+}
+
+.block {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	width: 100%;
+}
+
+.colors {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.color {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.swatch {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	box-shadow: inset 0 0 0 1px rgb(40 40 36 / 0.12);
+}
+
+.cta {
+	width: 100%;
+	margin-top: 4px;
+}
