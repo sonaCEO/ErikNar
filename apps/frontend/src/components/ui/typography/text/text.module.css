@@ -54,3 +54,9 @@
 	}
 }
 
+.caption {
+	font-size: 13px;
+	font-weight: var(--fw-regular);
+	color: var(--mist);
+}
+

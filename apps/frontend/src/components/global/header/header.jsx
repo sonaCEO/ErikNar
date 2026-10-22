@@ -3,9 +3,9 @@ import clsx from "clsx";
 import {Phone} from "lucide-react";
 import {RemoveScroll} from "react-remove-scroll";
 import {useHeaderScroll} from "../../../hooks/use-header-scroll";
-import {navigation, phone} from "./data.js";
+import {navigation, phone} from "../../../data/site";
 import LayoutContainer from "../../grid/layout-container/layout-container";
-import Logo from "../../global/logo/logo";
+import Logo from "../logo/logo";
 import {Button} from "../../ui/button/button";
 import s from "./header.module.css";
 
