@@ -7,11 +7,12 @@ export function Textarea({
 		id,
 		className,
 		textareaClassName,
+		compact = false,
 		rows = 4,
 		...props
 }) {
 		return (
-				<label className={clsx(s.field, className)} htmlFor={id}>
+				<label className={clsx(s.field, compact && s.compact, className)} htmlFor={id}>
 						{label && (
 								<Text as="span" variant="label">
 										{label}
