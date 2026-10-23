@@ -1,0 +1,22 @@
+.skeleton {
+	display: block;
+	min-height: 1em;
+	border-radius: 6px;
+	background: var(--line);
+	animation: pulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+	from {
+		opacity: 0.45;
+	}
+	to {
+		opacity: 0.9;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.skeleton {
+		animation: none;
+	}
+}
