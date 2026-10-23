@@ -1,196 +1,250 @@
 .button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 8px 16px;
-    color: var(--charcoal);
-    background-color: transparent;
-    font-size: 14px;
-    font-weight: var(--fw-semibold);
-    border: 1px solid transparent;
-    cursor: pointer;
-    border-radius: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 8px 16px;
+	color: var(--charcoal);
+	background-color: transparent;
+	font-size: 14px;
+	font-weight: var(--fw-semibold);
+	border: 1px solid transparent;
+	cursor: pointer;
+	border-radius: 24px;
 
-    @media(min-width: 768px) {
-        font-size: 16px;
-    }
+	@media (min-width: 768px) {
+		font-size: 16px;
+	}
 }
 
 .black,
 .ginger {
-    color: var(--white);
-    transition: transform ease var(--tr250), background-color ease var(--tr250), border-color ease var(--tr250), border-radius ease-in var(--tr150);
+	color: var(--white);
+	transition: transform ease var(--tr250), background-color ease var(--tr250), border-color ease var(--tr250), border-radius ease-in var(--tr150);
 
-    &:active {
-        transform: scale(0.95);
-    }
+	&:active {
+		transform: scale(0.95);
+	}
 }
 
 .black {
-    background-color: var(--charcoal);
-    border-color: var(--charcoal);
+	background-color: var(--charcoal);
+	border-color: var(--charcoal);
 
-    &:hover:not(:active) {
-        background-color: var(--charcoal-hover);
-        border-color: var(--charcoal-hover);
-    }
+	&:hover:not(:active) {
+		background-color: var(--charcoal-hover);
+		border-color: var(--charcoal-hover);
+	}
 }
 
 .ginger {
-    background-color: var(--copper);
-    border-color: var(--copper);
+	background-color: var(--copper);
+	border-color: var(--copper);
 
-    &:hover:not(:active) {
-        background-color: var(--copper-hover);
-        border-color: var(--copper-hover);
-    }
+	&:hover:not(:active) {
+		background-color: var(--copper-hover);
+		border-color: var(--copper-hover);
+	}
 }
 
 .soft {
-    color: var(--charcoal);
-    background-color: var(--white);
-    border-color: var(--line);
-    transition: transform ease var(--tr250), background-color ease var(--tr250), border-color ease var(--tr250), color ease var(--tr250);
+	color: var(--charcoal);
+	background-color: var(--white);
+	border-color: var(--line);
+	transition: transform ease var(--tr250), background-color ease var(--tr250), border-color ease var(--tr250), color ease var(--tr250);
 
-    &:not(.active):hover:not(:active) {
-        background-color: var(--cream-soft);
-        border-color: var(--mist);
-    }
+	&:not(.active):hover:not(:active) {
+		background-color: var(--cream-soft);
+		border-color: var(--mist);
+	}
 
-    &:not(.active):active {
-        transform: scale(0.95);
-        background-color: var(--cream-deep);
-    }
+	&:not(.active):active {
+		transform: scale(0.95);
+		background-color: var(--cream-deep);
+	}
 
-    &.active {
-        color: var(--white);
-        background-color: var(--charcoal);
-        border-color: var(--charcoal);
+	&.active {
+		color: var(--white);
+		background-color: var(--charcoal);
+		border-color: var(--charcoal);
 
-        &:hover:not(:active) {
-            background-color: var(--charcoal-hover);
-            border-color: var(--charcoal-hover);
-        }
+		&:hover:not(:active) {
+			background-color: var(--charcoal-hover);
+			border-color: var(--charcoal-hover);
+		}
 
-        &:active {
-            transform: scale(0.95);
-        }
-    }
+		&:active {
+			transform: scale(0.95);
+		}
+	}
 }
 
 .mini {
-    padding: 4px 8px;
-    font-size: 11px;
-    line-height: 1.2;
+	padding: 4px 8px;
+	font-size: 11px;
+	line-height: 1.2;
+}
+
+.content {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: inherit;
+	min-width: 0;
+}
+
+.content > svg {
+	flex-shrink: 0;
+}
+
+.loading {
+	position: relative;
+}
+
+.loading .content {
+	opacity: 0;
+}
+
+.loader {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.compact {
+	min-height: 36px;
+	padding: 7px 12px;
+	gap: 6px;
+	border-radius: 10px;
+	font-size: 13px;
+	line-height: 20px;
+}
+
+.button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.button.loading:disabled {
+	opacity: 1;
+	cursor: wait;
 }
 
 .sm {
-    padding: 8px 16px;
-    font-size: 12px;
+	padding: 8px 16px;
+	font-size: 12px;
 
-    @media(min-width: 768px) {
-        padding: 12px 20px;
-        font-size: 14px;
-    }
+	@media (min-width: 768px) {
+		padding: 12px 20px;
+		font-size: 14px;
+	}
 }
 
 .md {
-    padding: 12px 16px;
-    font-size: 14px;
+	padding: 12px 16px;
+	font-size: 14px;
 
-    @media(min-width: 768px) {
-        padding: 12px 20px;
-        font-size: 16px;
-    }
+	@media (min-width: 768px) {
+		padding: 12px 20px;
+		font-size: 16px;
+	}
 }
 
 .lg {
-    padding: 16px 28px;
-    font-size: 14px;
+	padding: 16px 28px;
+	font-size: 14px;
 
-    @media(min-width: 768px) {
-        padding: 20px 36px;
-        font-size: 16px;
-    }
+	@media (min-width: 768px) {
+		padding: 20px 36px;
+		font-size: 16px;
+	}
 }
 
 .underline {
-    padding: 0 0 4px;
-    border: 0;
-    border-radius: 0;
-    color: var(--charcoal);
-    background-color: transparent;
-    border-bottom: 1px solid var(--charcoal);
-    transition: opacity ease var(--tr250), transform ease var(--tr250);
+	padding: 0 0 4px;
+	border: 0;
+	border-radius: 0;
+	color: var(--charcoal);
+	background-color: transparent;
+	border-bottom: 1px solid var(--charcoal);
+	transition: opacity ease var(--tr250), transform ease var(--tr250);
 
-    &:hover:not(:active) {
-        opacity: var(--opacity7);
-    }
+	&:hover:not(:active) {
+		opacity: var(--opacity7);
+	}
 
-    &:active {
-        opacity: var(--opacity5);
-        transform: scale(0.98);
-    }
+	&:active {
+		opacity: var(--opacity5);
+		transform: scale(0.98);
+	}
 }
 
 .burger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: auto;
-    width: 44px;
-    height: 44px;
-    position: relative;
-    padding: 0;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background-color: var(--cream-soft);
-    transition:
-        opacity ease var(--tr250),
-        transform ease var(--tr250),
-        background-color ease var(--tr250),
-        border-color ease var(--tr250);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: auto;
+	width: 44px;
+	height: 44px;
+	position: relative;
+	padding: 0;
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	background-color: var(--cream-soft);
+	transition: opacity ease var(--tr250),
+	transform ease var(--tr250),
+	background-color ease var(--tr250),
+	border-color ease var(--tr250);
 
-    span,
-    &::before,
-    &::after {
-        content: "";
-        display: block;
-        width: 20px;
-        height: 2px;
-        border-radius: 2px;
-        background-color: var(--charcoal);
-        position: absolute;
-        left: 50%;
-        translate: -50% 0;
-    }
+	& > span:not(.loader),
+	&::before,
+	&::after {
+		content: "";
+		display: block;
+		width: 20px;
+		height: 2px;
+		border-radius: 2px;
+		background-color: var(--charcoal);
+		position: absolute;
+		left: 50%;
+		translate: -50% 0;
+	}
 
-    &::before {
-        top: 14px;
-    }
+	&::before {
+		top: 14px;
+	}
 
-    span {
-        top: 50%;
-        translate: -50% -50%;
-        width: 16px;
-    }
+	& > span:not(.loader) {
+		top: 50%;
+		translate: -50% -50%;
+		width: 16px;
+	}
 
-    &::after {
-        bottom: 14px;
-        width: 18px;
-    }
+	&::after {
+		bottom: 14px;
+		width: 18px;
+	}
 
-    &:hover:not(:active) {
-        background-color: var(--cream-soft);
-        border-color: var(--mist);
-    }
+	&.loading::before,
+	&.loading::after,
+	&.loading > span:not(.loader) {
+		opacity: 0;
+	}
 
-    &:active {
-        transform: scale(0.96);
-    }
+	&:hover:not(:active) {
+		background-color: var(--cream-soft);
+		border-color: var(--mist);
+	}
 
-    @media (min-width: 1200px) {
-        display: none;
-    }
+	&:active {
+		transform: scale(0.96);
+	}
+
+	@media (min-width: 1200px) {
+		display: none;
+	}
 }
