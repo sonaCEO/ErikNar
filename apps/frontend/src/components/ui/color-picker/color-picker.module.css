@@ -1,0 +1,43 @@
+.picker {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+
+.picker .label {
+	font-size: 14px;
+	line-height: 1.2;
+	text-transform: none;
+}
+
+.options {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.swatch {
+	display: block;
+	flex-shrink: 0;
+	width: 32px;
+	height: 32px;
+	padding: 3px;
+	border: 1px solid transparent;
+	border-radius: 50%;
+	background: transparent;
+	cursor: pointer;
+}
+
+.active {
+	border-color: var(--charcoal);
+}
+
+.fill {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 1px solid var(--charcoal);
+	border-radius: 50%;
+}
