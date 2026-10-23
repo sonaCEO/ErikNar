@@ -80,3 +80,19 @@
 	width: 100%;
 	padding-top: 8px;
 }
+
+.message {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16px;
+	color: var(--muted);
+}
+
+.srOnly {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+}
