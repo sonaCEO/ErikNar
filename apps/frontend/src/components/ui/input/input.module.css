@@ -7,6 +7,24 @@
 	min-width: 0;
 }
 
+.field.compact {
+	gap: 6px;
+}
+
+.compact > span {
+	font-size: 12px;
+	line-height: 1.4;
+	text-transform: none;
+}
+
+.compact .input {
+	min-height: 38px;
+	padding: 8px 11px;
+	border-radius: 9px;
+	font-size: 14px;
+	line-height: 20px;
+}
+
 .input {
 	width: 100%;
 	min-width: 0;
