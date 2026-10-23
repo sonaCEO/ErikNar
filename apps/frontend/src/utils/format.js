@@ -1,6 +1,9 @@
 export function formatPriceMinor(priceMinor, currency = "RUB") {
-		const amount = Math.round(Number(priceMinor) / 100);
-		const formatted = amount.toLocaleString("ru-RU");
+		const amount = Number(priceMinor) / 100;
+		const formatted = amount.toLocaleString("ru-RU", {
+				minimumFractionDigits: Number(priceMinor) % 100 ? 2 : 0,
+				maximumFractionDigits: 2,
+		});
 
 		if (currency === "RUB") return `${formatted} ₽`;
 		return `${formatted} ${currency}`;
