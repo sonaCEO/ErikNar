@@ -1,0 +1,248 @@
+.hero {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		min-height: 100dvh;
+		overflow: hidden;
+}
+
+.stage {
+		position: relative;
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		width: 100%;
+		min-height: 0;
+		background: var(--cream-soft);
+		overflow: hidden;
+}
+
+.stageInner {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding-top: 100px;
+		padding-bottom: 40px;
+
+		@media (min-width: 768px) {
+				min-height: 100%;
+				padding-top: 150px;
+				padding-bottom: 64px;
+		}
+}
+
+.copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 24px;
+		width: 100%;
+		max-width: 520px;
+
+		@media (min-width: 768px) {
+				gap: 32px;
+				width: 50%;
+		}
+}
+
+.actions {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+		width: 100%;
+
+		@media (min-width: 480px) {
+				flex-direction: row;
+				flex-wrap: wrap;
+				align-items: center;
+				width: auto;
+				gap: 16px;
+		}
+}
+
+.visual {
+		position: relative;
+		z-index: 1;
+		flex: 1 1 auto;
+		width: 100%;
+		min-height: 240px;
+		margin: 0;
+		overflow: hidden;
+		background: var(--cream-deep);
+
+		@media (min-width: 375px) {
+			min-height: 300px;
+		}
+
+		@media (min-width: 480px) {
+			min-height: 460px;
+		}
+
+		@media (min-width: 768px) {
+				position: absolute;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				flex: none;
+				width: 50%;
+				min-height: 0;
+
+				&::after {
+						content: "";
+						position: absolute;
+						inset: 0;
+						pointer-events: none;
+						background: linear-gradient(
+								90deg,
+								var(--cream-soft) 0%,
+								rgb(255 253 248 / 0.55) 18%,
+								rgb(255 253 248 / 0) 42%
+						);
+				}
+		}
+}
+
+.image {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		max-width: none;
+		object-fit: cover;
+		object-position: center;
+}
+
+.bar {
+		position: relative;
+		z-index: 2;
+		flex: 0 0 auto;
+		width: 100%;
+		overflow: hidden;
+		background: var(--copper);
+}
+
+.barInner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+
+		@media (min-width: 992px) {
+				flex-direction: row;
+				align-items: stretch;
+				min-height: 160px;
+		}
+}
+
+.barLead {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 20px;
+		padding: 32px 0;
+		background: var(--charcoal);
+
+		@media (min-width: 992px) {
+				flex: 0 0 32%;
+				padding: 36px 40px 36px 0;
+		}
+
+		&::before,
+		&::after {
+				content: "";
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				z-index: -1;
+				width: 100vw;
+				background: var(--charcoal);
+		}
+
+		&::before {
+				right: 100%;
+		}
+
+		&::after {
+				left: 100%;
+
+				@media (min-width: 992px) {
+						display: none;
+				}
+		}
+}
+
+.barTitle {
+		margin: 0;
+		font-family: var(--ff-title);
+		font-size: 28px;
+		line-height: 1.15;
+		color: var(--white);
+
+		@media (min-width: 768px) {
+				font-size: 32px;
+		}
+}
+
+.barFacts {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 24px;
+		flex: 1 1 auto;
+		padding: 32px 0;
+		background: var(--copper);
+
+		@media (min-width: 480px) {
+				flex-direction: row;
+				flex-wrap: wrap;
+				align-items: stretch;
+		}
+
+		@media (min-width: 992px) {
+				flex-wrap: nowrap;
+				align-items: center;
+				justify-content: space-between;
+				gap: 32px;
+				padding: 36px 0 36px 48px;
+				background: transparent;
+		}
+
+		&::before,
+		&::after {
+				content: "";
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				width: 100vw;
+				background: var(--copper);
+
+				@media (min-width: 992px) {
+						display: none;
+				}
+		}
+
+		&::before {
+				right: 100%;
+		}
+
+		&::after {
+				left: 100%;
+		}
+
+		& > * {
+				position: relative;
+				z-index: 1;
+				flex: 1 1 0;
+				min-width: 0;
+				max-width: none;
+		}
+}

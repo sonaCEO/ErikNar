@@ -1,0 +1,14 @@
+import clsx from "clsx";
+import s from "./fact.module.css";
+
+export function Fact({value, unit, label, variant, className}) {
+		return (
+				<div className={clsx(s.fact, variant && s[variant], className)}>
+						<p className={s.metric}>
+								<span className={s.value}>{value}</span>
+								{unit && <span className={s.unit}>{unit}</span>}
+						</p>
+						<span className={s.label}>{label}</span>
+				</div>
+		);
+}
