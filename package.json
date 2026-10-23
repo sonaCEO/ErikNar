@@ -11,8 +11,5 @@
     "test:backend": "cd apps/backend && uv run pytest -v",
     "lint:backend": "cd apps/backend && uv run ruff check . && uv run mypy src tests",
     "dev": "docker compose up --build"
-  },
-  "dependencies": {
-    "clsx": "^2.1.1"
   }
 }
