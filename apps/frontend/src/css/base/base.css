@@ -11,7 +11,8 @@
 }
 
 html {
-	color-scheme: light dark;
+	color-scheme: light;
+	background-color: var(--main-bg);
 	text-size-adjust: 100%;
 	-webkit-text-size-adjust: 100%;
 	hanging-punctuation: first allow-end;
