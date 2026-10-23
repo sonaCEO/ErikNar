@@ -36,13 +36,22 @@ export function getControlTypes(variants) {
 		);
 }
 
-export function findVariant(variants, selection) {
-		return variants.find((variant) => (
-				variant.body_color.id === selection.bodyColorId
-				&& variant.width_mm === selection.widthMm
-				&& variant.height_mm === selection.heightMm
-				&& variant.control_type.id === selection.controlTypeId
-		)) ?? null;
+export function selectVariant(variants, current, changes) {
+		const candidates = variants.filter((variant) => (
+				(changes.bodyColorId === undefined || variant.body_color.id === changes.bodyColorId)
+				&& (changes.widthMm === undefined || variant.width_mm === changes.widthMm)
+				&& (changes.heightMm === undefined || variant.height_mm === changes.heightMm)
+				&& (changes.controlTypeId === undefined || variant.control_type.id === changes.controlTypeId)
+				&& (changes.panelColorId === undefined || variant.panel_color.id === changes.panelColorId)
+		));
+		if (!candidates.length) return current ?? null;
+		if (!current) return candidates[0];
+
+		const score = (variant) => Number(variant.body_color.id === current.body_color.id) * 8
+				+ Number(variant.width_mm === current.width_mm && variant.height_mm === current.height_mm) * 4
+				+ Number(variant.control_type.id === current.control_type.id) * 2
+				+ Number(variant.panel_color.id === current.panel_color.id);
+		return candidates.reduce((best, variant) => score(variant) > score(best) ? variant : best);
 }
 
 export function sortMedia(media) {
