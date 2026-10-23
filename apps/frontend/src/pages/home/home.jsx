@@ -6,18 +6,20 @@ import {Custom} from "../../components/sections/custom/custom";
 import {Spaces} from "../../components/sections/spaces/spaces";
 import {Testimonials} from "../../components/sections/testimonials/testimonials";
 import {Cta} from "../../components/sections/cta/cta";
+import {Seo} from "../../components/seo/seo";
 
 export function Home() {
 		return (
 				<>
-						<Hero />
-						<Collection />
-						<Control />
-						<Advantages />
-						<Custom />
-						<Spaces />
-						<Testimonials />
-						<Cta />
+						<Seo page="home"/>
+						<Hero/>
+						<Collection/>
+						<Control/>
+						<Advantages/>
+						<Custom/>
+						<Spaces/>
+						<Testimonials/>
+						<Cta/>
 				</>
 		);
 }

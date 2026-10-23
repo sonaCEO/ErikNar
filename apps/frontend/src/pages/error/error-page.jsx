@@ -1,6 +1,8 @@
 import {isRouteErrorResponse, useRouteError} from "react-router";
 import Header from "../../components/global/header/header";
 import {StatusScreen} from "../../components/ui/status-screen/status-screen";
+import {Seo} from "../../components/seo/seo";
+import {ModalProvider} from "../../components/modals/modal-provider";
 
 function getErrorContent(error) {
 		if (isRouteErrorResponse(error)) {
@@ -37,11 +39,12 @@ export function ErrorPage() {
 		const content = getErrorContent(error);
 
 		return (
-				<>
-						<Header />
+				<ModalProvider>
+						<Seo page={content.code === "404" ? "notFound" : "error"}/>
+						<Header/>
 						<main>
 								<StatusScreen {...content} />
 						</main>
-				</>
+				</ModalProvider>
 		);
 }
