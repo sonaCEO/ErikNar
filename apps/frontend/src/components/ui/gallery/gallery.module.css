@@ -76,6 +76,10 @@
 	object-position: center;
 }
 
+.thumbContain {
+	object-fit: contain;
+}
+
 .compact {
 	gap: 6px;
 

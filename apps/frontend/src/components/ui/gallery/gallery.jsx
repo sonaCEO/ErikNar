@@ -1,25 +1,27 @@
 import clsx from "clsx";
+import {Image} from "../image/image";
 import s from "./gallery.module.css";
 
 export function Gallery({
-		items = [],
-		activeIndex = 0,
-		onSelect,
-		className,
-		compact = false,
-}) {
+														items = [],
+														activeIndex = 0,
+														onSelect,
+														className,
+														compact = false,
+														fit = "cover",
+												}) {
 		const active = items[activeIndex] ?? items[0];
-
-		if (!active) return null;
 
 		return (
 				<div className={clsx(s.gallery, compact && s.compact, className)}>
 						<figure className={s.stage}>
-								<img
+								<Image
+										key={active?.url}
 										className={s.image}
-										src={active.url}
-										alt={active.alt_text || ""}
-										decoding="async"
+										src={active?.url}
+										alt={active?.alt_text || ""}
+										loading="eager"
+										fit={fit}
 								/>
 						</figure>
 
@@ -35,7 +37,7 @@ export function Gallery({
 																onClick={() => onSelect?.(index)}
 														>
 																<img
-																		className={s.thumbImage}
+																		className={clsx(s.thumbImage, fit === "contain" && s.thumbContain)}
 																		src={item.url}
 																		alt=""
 																		decoding="async"
