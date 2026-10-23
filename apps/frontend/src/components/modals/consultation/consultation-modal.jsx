@@ -1,9 +1,13 @@
 import {useId, useState} from "react";
+import {toast} from "sonner";
 import {Modal} from "../../ui/modal/modal";
 import {TitleGroup} from "../../ui/title-group/title-group";
 import {Input} from "../../ui/input/input";
 import {Textarea} from "../../ui/textarea/textarea";
 import {Button} from "../../ui/button/button";
+import {useCreateLead} from "../../../hooks/queries/use-create-lead";
+import {useProduct, useProducts} from "../../../hooks/queries/use-products";
+import {ApiError} from "../../../api/client";
 import {formatPhoneRu, isPhoneRuComplete} from "../../../utils/phone";
 import s from "./consultation-modal.module.css";
 
@@ -13,12 +17,19 @@ const initialForm = {
 		comment: "",
 };
 
-export function ConsultationModal({open, onClose, onExited}) {
+export function ConsultationModal({open, onClose, onExited, variantId, productName, sku}) {
 		const titleId = useId();
 		const nameId = useId();
 		const phoneId = useId();
 		const commentId = useId();
 		const [form, setForm] = useState(initialForm);
+
+		const createLead = useCreateLead();
+		const {data: products} = useProducts();
+		const needsFallback = !variantId && Boolean(products?.[0]?.slug);
+		const {data: fallbackProduct} = useProduct(needsFallback ? products[0].slug : undefined);
+
+		const resolvedVariantId = variantId ?? fallbackProduct?.variants?.[0]?.id;
 
 		function update(field) {
 				return (event) => {
@@ -40,8 +51,35 @@ export function ConsultationModal({open, onClose, onExited}) {
 				event.preventDefault();
 				if (!isPhoneRuComplete(form.phone)) return;
 
-				onClose?.();
-				setForm(initialForm);
+				if (!resolvedVariantId) {
+						toast.error("Каталог ещё загружается, попробуйте через пару секунд");
+						return;
+				}
+
+				createLead.mutate(
+						{
+								variantId: resolvedVariantId,
+								customerName: form.name,
+								phone: form.phone,
+								comment: form.comment,
+						},
+						{
+								onSuccess: (result) => {
+										const number = `№${String(result.number).padStart(4, "0")}`;
+										toast.success(`Заявка ${number} отправлена`, {
+												description: "Менеджер свяжется с вами в ближайшее время",
+										});
+										setForm(initialForm);
+										onClose?.();
+								},
+								onError: (error) => {
+										const message = error instanceof ApiError
+												? error.message
+												: "Не удалось отправить заявку, попробуйте ещё раз";
+										toast.error(message);
+								},
+						},
+				);
 		}
 
 		return (
@@ -58,7 +96,9 @@ export function ConsultationModal({open, onClose, onExited}) {
 												subtitle="Персональная консультация"
 												title="Подберём идеальную модель"
 												titleLevel={3}
-												text="Оставьте контакты - обсудим размер, цвет и тип управления."
+												text={productName
+														? `${productName}${sku ? ` · ${sku}` : ""}`
+														: "Оставьте контакты - обсудим размер, цвет и тип управления."}
 												textVariant="muted"
 										/>
 								</div>
@@ -103,6 +143,7 @@ export function ConsultationModal({open, onClose, onExited}) {
 												type="submit"
 												variant="ginger"
 												size="lg"
+												isLoading={createLead.isPending}
 												className={s.submit}
 										>
 												Отправить заявку
