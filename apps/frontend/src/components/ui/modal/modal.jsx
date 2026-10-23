@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {createPortal} from "react-dom";
 import {X} from "lucide-react";
 import {RemoveScroll} from "react-remove-scroll";
@@ -7,17 +7,20 @@ import {Button} from "../button/button";
 import s from "./modal.module.css";
 
 export function Modal({
-		open,
-		onClose,
-		onExited,
-		children,
-		className,
-		labelledBy,
-		describedBy,
-}) {
+													open,
+													onClose,
+													onExited,
+													children,
+													className,
+													rootClassName,
+													closeClassName,
+													labelledBy,
+													describedBy,
+											}) {
 		const [rendered, setRendered] = useState(open);
 		const [entered, setEntered] = useState(false);
 		const [prevOpen, setPrevOpen] = useState(open);
+		const dialogRef = useRef(null);
 
 		if (open !== prevOpen) {
 				setPrevOpen(open);
@@ -46,9 +49,35 @@ export function Modal({
 
 		useEffect(() => {
 				if (!rendered) return undefined;
+				const previousFocus = document.activeElement;
+				const dialog = dialogRef.current;
+				const firstInput = dialog?.querySelector('input:not(:disabled):not([type="radio"]):not([type="checkbox"]), select:not(:disabled), textarea:not(:disabled)');
+				(firstInput ?? dialog)?.focus({preventScroll: true});
+				return () => {
+						if (previousFocus?.isConnected) previousFocus.focus({preventScroll: true});
+				};
+		}, [rendered]);
+
+		useEffect(() => {
+				if (!rendered) return undefined;
 
 				function onKeyDown(event) {
 						if (event.key === "Escape") onClose?.();
+						if (event.key !== "Tab") return;
+						const items = [...(dialogRef.current?.querySelectorAll(
+								'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex="0"]',
+						) ?? [])].filter((element) => element.getClientRects().length > 0);
+						const first = items[0];
+						const last = items.at(-1);
+						if (!first) {
+								event.preventDefault();
+						} else if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+								event.preventDefault();
+								last.focus();
+						} else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) {
+								event.preventDefault();
+								first.focus();
+						}
 				}
 
 				window.addEventListener("keydown", onKeyDown);
@@ -69,7 +98,7 @@ export function Modal({
 		return createPortal(
 				<RemoveScroll enabled>
 						<div
-								className={clsx(s.root, entered && s.entered)}
+								className={clsx(s.root, entered && s.entered, rootClassName)}
 								role="presentation"
 								onTransitionEnd={handleTransitionEnd}
 						>
@@ -82,6 +111,8 @@ export function Modal({
 
 								<div
 										className={clsx(s.dialog, className)}
+										ref={dialogRef}
+										tabIndex={-1}
 										role="dialog"
 										aria-modal="true"
 										aria-labelledby={labelledBy}
@@ -90,7 +121,7 @@ export function Modal({
 										<Button
 												variant="soft"
 												size="mini"
-												className={s.close}
+												className={clsx(s.close, closeClassName)}
 												aria-label="Закрыть"
 												onClick={onClose}
 										>

@@ -48,8 +48,13 @@ export function ModalProvider({children}) {
 										onClose={closeModal}
 										onExited={handleExited}
 										product={modal.props.product}
+										initialVariantId={modal.props.initialVariantId}
+										relatedProducts={modal.props.relatedProducts}
 										onConsult={(context) => openModal("consultation", context)}
-										onOpenProduct={(nextProduct) => openModal("product", {product: nextProduct})}
+										onOpenProduct={(nextProduct) => openModal("product", {
+												product: nextProduct,
+												relatedProducts: [modal.props.product, ...(modal.props.relatedProducts ?? [])].filter((item) => item.id !== nextProduct.id),
+										})}
 								/>
 						)}
 				</ModalContext>
