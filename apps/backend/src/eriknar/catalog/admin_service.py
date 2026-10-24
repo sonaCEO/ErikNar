@@ -106,15 +106,34 @@ class AdminCatalogService:
         await self._add(item)
         return BodyColorAdminView.model_validate(item)
 
+    async def list_body_colors(self) -> list[BodyColorAdminView]:
+        colors = await self._session.scalars(select(BodyColor).order_by(BodyColor.name))
+        return [BodyColorAdminView.model_validate(item) for item in colors]
+
     async def create_panel_color(self, command: CreatePanelColorCommand) -> ReferenceView:
         item = PanelColor(**command.model_dump())
         await self._add(item)
         return ReferenceView.model_validate(item)
 
+    async def list_panel_colors(self) -> list[ReferenceView]:
+        colors = await self._session.scalars(select(PanelColor).order_by(PanelColor.name))
+        return [ReferenceView.model_validate(item) for item in colors]
+
     async def create_control_type(self, command: CreateControlTypeCommand) -> ControlTypeAdminView:
         item = ControlType(**command.model_dump())
         await self._add(item)
         return ControlTypeAdminView.model_validate(item)
+
+    async def list_control_types(self) -> list[ControlTypeAdminView]:
+        types = await self._session.scalars(select(ControlType).order_by(ControlType.name))
+        return [ControlTypeAdminView.model_validate(item) for item in types]
+
+    async def list_variants(self, product_id: UUID | None) -> list[AdminVariantView]:
+        statement = select(ProductVariant).order_by(ProductVariant.sku)
+        if product_id is not None:
+            statement = statement.where(ProductVariant.product_id == product_id)
+        variants = await self._session.scalars(statement)
+        return [AdminVariantView.model_validate(item) for item in variants]
 
     async def create_variant(self, command: CreateVariantCommand) -> AdminVariantView:
         async with self._session.begin():

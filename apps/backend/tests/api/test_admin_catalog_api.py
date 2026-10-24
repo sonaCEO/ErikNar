@@ -112,3 +112,62 @@ async def test_manager_cannot_edit_catalog(migrated_postgres_url: str) -> None:
     assert response.status_code == 403
     await client.aclose()
     await engine.dispose()
+
+
+@pytest.mark.anyio
+async def test_admin_reads_reference_data_with_updated_at(migrated_postgres_url: str) -> None:
+    client, engine = await _client(migrated_postgres_url, UserRole.ADMIN)
+    body_color = await client.post(
+        "/api/v1/admin/catalog/body-colors",
+        json={"slug": "black", "name": "Чёрный", "hex_value": "#202020"},
+    )
+    panel_color = await client.post(
+        "/api/v1/admin/catalog/panel-colors",
+        json={"slug": "white", "name": "Белый"},
+    )
+    control_type = await client.post(
+        "/api/v1/admin/catalog/control-types",
+        json={"slug": "touch", "name": "Сенсорная"},
+    )
+    product = await client.post("/api/v1/admin/catalog/products", json=_product())
+    variant = await client.post(
+        "/api/v1/admin/catalog/variants",
+        json={
+            "product_id": product.json()["id"],
+            "sku": "ER-B-800-500-BLACK-TOUCH",
+            "width_mm": 500,
+            "height_mm": 800,
+            "body_color_id": body_color.json()["id"],
+            "control_type_id": control_type.json()["id"],
+            "panel_color_id": panel_color.json()["id"],
+            "price_minor": 1_260_000,
+            "availability_status": "in_stock",
+        },
+    )
+
+    body_colors = await client.get("/api/v1/admin/catalog/body-colors")
+    panel_colors = await client.get("/api/v1/admin/catalog/panel-colors")
+    control_types = await client.get("/api/v1/admin/catalog/control-types")
+    variants = await client.get(f"/api/v1/admin/catalog/variants?product_id={product.json()['id']}")
+
+    assert body_colors.status_code == 200
+    assert body_colors.json()[0]["updated_at"] is not None
+    assert panel_colors.status_code == 200
+    assert panel_colors.json()[0]["updated_at"] is not None
+    assert control_types.status_code == 200
+    assert control_types.json()[0]["updated_at"] is not None
+    assert variants.status_code == 200
+    assert [item["id"] for item in variants.json()] == [variant.json()["id"]]
+    assert variants.json()[0]["updated_at"] is not None
+    await client.aclose()
+    await engine.dispose()
+
+
+@pytest.mark.anyio
+async def test_manager_cannot_read_catalog_reference_data(migrated_postgres_url: str) -> None:
+    client, engine = await _client(migrated_postgres_url, UserRole.MANAGER)
+    response = await client.get("/api/v1/admin/catalog/body-colors")
+
+    assert response.status_code == 403
+    await client.aclose()
+    await engine.dispose()

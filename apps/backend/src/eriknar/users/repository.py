@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from eriknar.users.models import AuthLoginAttempt, User
@@ -9,6 +9,18 @@ from eriknar.users.models import AuthLoginAttempt, User
 class UserRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def list_employees(self, *, page: int, page_size: int) -> list[User]:
+        statement = (
+            select(User)
+            .order_by(User.name, User.id)
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
+        return list((await self._session.scalars(statement)).all())
+
+    async def count_employees(self) -> int:
+        return await self._session.scalar(select(func.count()).select_from(User)) or 0
 
     async def get_active_by_telegram_id(self, telegram_user_id: int) -> User | None:
         return await self._session.scalar(

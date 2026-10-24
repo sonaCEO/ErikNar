@@ -87,12 +87,24 @@ async def create_body_color(
     return await service.create_body_color(payload)
 
 
+@router.get("/body-colors", response_model=list[BodyColorAdminView])
+async def list_body_colors(admin: Admin, service: Service) -> list[BodyColorAdminView]:
+    del admin
+    return await service.list_body_colors()
+
+
 @router.post("/panel-colors", response_model=ReferenceView, status_code=201)
 async def create_panel_color(
     payload: CreatePanelColorCommand, admin: Admin, service: Service
 ) -> ReferenceView:
     del admin
     return await service.create_panel_color(payload)
+
+
+@router.get("/panel-colors", response_model=list[ReferenceView])
+async def list_panel_colors(admin: Admin, service: Service) -> list[ReferenceView]:
+    del admin
+    return await service.list_panel_colors()
 
 
 @router.post("/control-types", response_model=ControlTypeAdminView, status_code=201)
@@ -103,12 +115,28 @@ async def create_control_type(
     return await service.create_control_type(payload)
 
 
+@router.get("/control-types", response_model=list[ControlTypeAdminView])
+async def list_control_types(admin: Admin, service: Service) -> list[ControlTypeAdminView]:
+    del admin
+    return await service.list_control_types()
+
+
 @router.post("/variants", response_model=AdminVariantView, status_code=201)
 async def create_variant(
     payload: CreateVariantCommand, admin: Admin, service: Service
 ) -> AdminVariantView:
     del admin
     return await service.create_variant(payload)
+
+
+@router.get("/variants", response_model=list[AdminVariantView])
+async def list_variants(
+    admin: Admin,
+    service: Service,
+    product_id: Annotated[UUID | None, Query()] = None,
+) -> list[AdminVariantView]:
+    del admin
+    return await service.list_variants(product_id)
 
 
 @router.patch("/variants/{variant_id}", response_model=AdminVariantView)

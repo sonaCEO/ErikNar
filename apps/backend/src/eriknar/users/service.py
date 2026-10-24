@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from eriknar.core.config import Settings
 from eriknar.users.models import AuthLoginAttempt, User
 from eriknar.users.repository import UserRepository
-from eriknar.users.schemas import CreateEmployeeCommand, UpdateEmployeeCommand, UserView
+from eriknar.users.schemas import CreateEmployeeCommand, UpdateEmployeeCommand, UserPage, UserView
 from eriknar.users.security import hash_password, verify_password
 
 _DUMMY_PASSWORD_HASH = hash_password("eriknar-invalid-login-placeholder")
@@ -130,6 +130,22 @@ class EmployeeService:
                 await self._session.flush()
         except IntegrityError as exc:
             raise LoginConflictError from exc
+        return UserView.model_validate(user)
+
+    async def list_employees(self, page: int, page_size: int) -> UserPage:
+        total = await self._users.count_employees()
+        users = await self._users.list_employees(page=page, page_size=page_size)
+        return UserPage(
+            items=[UserView.model_validate(user) for user in users],
+            page=page,
+            page_size=page_size,
+            total=total,
+        )
+
+    async def get_employee(self, user_id: UUID) -> UserView:
+        user = await self._users.get_by_id(user_id)
+        if user is None:
+            raise EmployeeNotFoundError(user_id)
         return UserView.model_validate(user)
 
     async def set_employee_state(self, user_id: UUID, command: UpdateEmployeeCommand) -> UserView:
