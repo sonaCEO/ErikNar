@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -66,6 +67,52 @@ async def test_admin_creates_and_deactivates_employee(migrated_postgres_url: str
     assert created.json()["login"] == "olga"
     assert updated.status_code == 200
     assert updated.json()["is_active"] is False
+    await client.aclose()
+    await factory.kw["bind"].dispose()
+
+
+@pytest.mark.anyio
+async def test_admin_lists_and_reads_employee(migrated_postgres_url: str) -> None:
+    client, factory = await _authorized_client(migrated_postgres_url, UserRole.ADMIN)
+    created = await client.post(
+        "/api/v1/admin/users",
+        json={
+            "name": "Ольга",
+            "login": "olga",
+            "password": "another-strong-password",
+            "role": "manager",
+        },
+    )
+
+    listed = await client.get("/api/v1/admin/users?page=1&page_size=20")
+    fetched = await client.get(f"/api/v1/admin/users/{created.json()['id']}")
+
+    assert listed.status_code == 200
+    assert listed.json()["total"] == 2
+    assert {item["login"] for item in listed.json()["items"]} == {"actor", "olga"}
+    assert fetched.status_code == 200
+    assert fetched.json()["login"] == "olga"
+    await client.aclose()
+    await factory.kw["bind"].dispose()
+
+
+@pytest.mark.anyio
+async def test_unknown_employee_returns_not_found(migrated_postgres_url: str) -> None:
+    client, factory = await _authorized_client(migrated_postgres_url, UserRole.ADMIN)
+    response = await client.get(f"/api/v1/admin/users/{uuid4()}")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "employee_not_found"
+    await client.aclose()
+    await factory.kw["bind"].dispose()
+
+
+@pytest.mark.anyio
+async def test_manager_cannot_list_employees(migrated_postgres_url: str) -> None:
+    client, factory = await _authorized_client(migrated_postgres_url, UserRole.MANAGER)
+    response = await client.get("/api/v1/admin/users")
+
+    assert response.status_code == 403
     await client.aclose()
     await factory.kw["bind"].dispose()
 
