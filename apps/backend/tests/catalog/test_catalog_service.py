@@ -56,8 +56,11 @@ class CatalogRepositoryStub:
     async def get_published_by_slug(self, slug: str) -> Product | None:
         return self.product if self.product.slug == slug else None
 
-    async def list_published(self) -> list[Product]:
+    async def list_published(self, *, page: int, page_size: int) -> list[Product]:
         return [self.product]
+
+    async def count_published(self) -> int:
+        return 1
 
 
 @pytest.mark.anyio

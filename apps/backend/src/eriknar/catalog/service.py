@@ -10,6 +10,7 @@ from eriknar.catalog.schemas import (
     MediaView,
     ProductDetail,
     ProductSummary,
+    ProductSummaryPage,
     VariantView,
 )
 
@@ -21,7 +22,9 @@ class ProductNotFoundError(Exception):
 class CatalogReader(Protocol):
     async def get_published_by_slug(self, slug: str) -> Product | None: ...
 
-    async def list_published(self) -> list[Product]: ...
+    async def list_published(self, *, page: int, page_size: int) -> list[Product]: ...
+
+    async def count_published(self) -> int: ...
 
 
 def _default_media_url(bucket: str, object_key: str) -> str:
@@ -107,9 +110,9 @@ class CatalogService:
             variants=variants,
         )
 
-    async def list_products(self) -> list[ProductSummary]:
+    async def list_products(self, page: int = 1, page_size: int = 20) -> ProductSummaryPage:
         summaries: list[ProductSummary] = []
-        for product in await self._repository.list_published():
+        for product in await self._repository.list_published(page=page, page_size=page_size):
             variants = [
                 variant
                 for variant in product.variants
@@ -135,4 +138,5 @@ class CatalogService:
                     ),
                 )
             )
-        return summaries
+        total = await self._repository.count_published()
+        return ProductSummaryPage(items=summaries, page=page, page_size=page_size, total=total)
