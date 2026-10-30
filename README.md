@@ -36,8 +36,11 @@ cp .env.demo.example .env.demo
 docker compose --env-file .env.demo -f compose.demo.yaml up -d --build
 ```
 
-При необходимости Cloudflare Quick Tunnel включается отдельным профилем. Адрес вида
-`https://...trycloudflare.com` появится в логах и может измениться после перезапуска:
+При необходимости Cloudflare Quick Tunnel включается отдельным профилем. Это удобно для
+быстрой демонстрации, но **не годится для продакшена с аудиторией из РФ** — Cloudflare там
+у многих пользователей недоступен или нестабилен. Для прода нужен отдельный хостинг/CDN,
+доступный из РФ напрямую. Адрес вида `https://...trycloudflare.com` появится в логах и может
+измениться после перезапуска:
 
 ```bash
 docker compose --env-file .env.demo -f compose.demo.yaml --profile cloudflare up -d tunnel
