@@ -161,39 +161,45 @@ export function LeadDetailPage() {
 										</section>
 
 										<section className={s.card}>
-												<Text as="span" variant="subtitle">
-														Комплектация на момент заявки
-												</Text>
+											<Text as="span" variant="subtitle">
+												{snapshot ? "Комплектация на момент заявки" : "Тип заявки"}
+											</Text>
+											{snapshot ? (
 												<dl className={s.specs}>
-														<div className={s.spec}>
-																<dt>Модель</dt>
-																<dd>{snapshot.product_name}</dd>
-														</div>
-														<div className={s.spec}>
-																<dt>Артикул</dt>
-																<dd>{snapshot.sku}</dd>
-														</div>
-														<div className={s.spec}>
-																<dt>Размер</dt>
-																<dd>{formatSizeMm(snapshot.width_mm, snapshot.height_mm)}</dd>
-														</div>
-														<div className={s.spec}>
-																<dt>Цвет корпуса</dt>
-																<dd>{snapshot.body_color.name}</dd>
-														</div>
-														<div className={s.spec}>
-																<dt>Цвет панели</dt>
-																<dd>{snapshot.panel_color.name}</dd>
-														</div>
-														<div className={s.spec}>
-																<dt>Управление</dt>
-																<dd>{snapshot.control_type.name}</dd>
-														</div>
-														<div className={s.spec}>
-																<dt>Цена</dt>
-																<dd>{formatPriceMinor(snapshot.price_minor, snapshot.currency)}</dd>
-														</div>
+													<div className={s.spec}>
+														<dt>Модель</dt>
+														<dd>{snapshot.product_name}</dd>
+													</div>
+													<div className={s.spec}>
+														<dt>Артикул</dt>
+														<dd>{snapshot.sku}</dd>
+													</div>
+													<div className={s.spec}>
+														<dt>Размер</dt>
+														<dd>{formatSizeMm(snapshot.width_mm, snapshot.height_mm)}</dd>
+													</div>
+													<div className={s.spec}>
+														<dt>Цвет корпуса</dt>
+														<dd>{snapshot.body_color.name}</dd>
+													</div>
+													<div className={s.spec}>
+														<dt>Цвет панели</dt>
+														<dd>{snapshot.panel_color.name}</dd>
+													</div>
+													<div className={s.spec}>
+														<dt>Управление</dt>
+														<dd>{snapshot.control_type.name}</dd>
+													</div>
+													<div className={s.spec}>
+														<dt>Цена</dt>
+														<dd>{formatPriceMinor(snapshot.price_minor, snapshot.currency)}</dd>
+													</div>
 												</dl>
+											) : (
+												<Text as="p" variant="muted">
+													Консультация / индивидуальный заказ — модель не выбрана
+												</Text>
+											)}
 										</section>
 
 										<section className={s.card}>

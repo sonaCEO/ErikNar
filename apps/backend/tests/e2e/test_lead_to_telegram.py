@@ -120,6 +120,7 @@ async def test_catalog_lead_and_telegram_form_one_vertical_slice(
     async with factory() as session:
         lead = await session.scalar(select(Lead))
         assert lead is not None
+        assert lead.snapshot is not None
         assert lead.snapshot["price_minor"] == variant["price_minor"]
     assert len(gateway.topic_names) == 1
     assert len(gateway.cards) == 1

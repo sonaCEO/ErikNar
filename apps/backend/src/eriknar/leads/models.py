@@ -37,7 +37,7 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         index=True,
     )
     customer_id: Mapped[UUID] = mapped_column(ForeignKey("customers.id"))
-    variant_id: Mapped[UUID] = mapped_column(ForeignKey("product_variants.id"))
+    variant_id: Mapped[UUID | None] = mapped_column(ForeignKey("product_variants.id"))
     source: Mapped[LeadSource] = mapped_column(
         Enum(
             LeadSource,
@@ -54,7 +54,7 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=LeadStatus.NEW,
         server_default=LeadStatus.NEW.value,
     )
-    snapshot: Mapped[dict[str, object]] = mapped_column(JSONB)
+    snapshot: Mapped[dict[str, object] | None] = mapped_column(JSONB)
     customer_name: Mapped[str] = mapped_column(String(120))
     customer_phone: Mapped[str] = mapped_column(String(40))
     comment: Mapped[str] = mapped_column(Text, default="", server_default="")
@@ -69,5 +69,5 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     telegram_archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     customer: Mapped[Customer] = relationship()
-    variant: Mapped[ProductVariant] = relationship()
+    variant: Mapped[ProductVariant | None] = relationship()
     assigned_to: Mapped[User | None] = relationship()

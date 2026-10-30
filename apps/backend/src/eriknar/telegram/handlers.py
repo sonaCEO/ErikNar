@@ -72,7 +72,7 @@ class ManagerActionService:
                     assigned_to_name=assignee.name if assignee else None,
                     status=claim_result.status,
                     number=lead.number,
-                    model_code=str(lead.snapshot["model_code"]),
+                    model_code=str(lead.snapshot["model_code"]) if lead.snapshot else None,
                     telegram_topic_id=lead.telegram_topic_id,
                     claimed=claim_result.claimed,
                 )

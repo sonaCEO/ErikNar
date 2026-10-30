@@ -36,9 +36,23 @@ def _result() -> LeadResult:
     )
 
 
+def _consultation_result() -> LeadResult:
+    return LeadResult(
+        public_id=PUBLIC_ID,
+        number=8,
+        status=LeadStatus.NEW,
+        snapshot=None,
+    )
+
+
 class SuccessfulLeadService:
     async def create(self, command: object, idempotency_key: str) -> LeadResult:
         return _result()
+
+
+class SuccessfulConsultationLeadService:
+    async def create(self, command: object, idempotency_key: str) -> LeadResult:
+        return _consultation_result()
 
 
 class ConflictingLeadService:
@@ -73,6 +87,28 @@ async def test_create_lead_returns_public_identifier() -> None:
 
     assert status == 201
     assert payload == {"public_id": str(PUBLIC_ID), "number": 7, "status": "new"}
+
+
+@pytest.mark.anyio
+async def test_create_lead_without_variant_id_is_accepted() -> None:
+    app = create_app()
+    app.dependency_overrides[get_lead_service] = lambda: SuccessfulConsultationLeadService()
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        base_url="http://testserver",
+    ) as client:
+        response = await client.post(
+            "/api/v1/leads",
+            headers={"Idempotency-Key": "consultation-request-1"},
+            json={
+                "customer_name": "Анна",
+                "phone": "+7 999 000-00-00",
+                "comment": "Нужна консультация, модель не выбрана",
+            },
+        )
+
+    assert response.status_code == 201
+    assert response.json() == {"public_id": str(PUBLIC_ID), "number": 8, "status": "new"}
 
 
 @pytest.mark.anyio
