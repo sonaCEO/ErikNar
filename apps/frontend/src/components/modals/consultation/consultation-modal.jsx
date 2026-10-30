@@ -6,7 +6,6 @@ import {Input} from "../../ui/input/input";
 import {Textarea} from "../../ui/textarea/textarea";
 import {Button} from "../../ui/button/button";
 import {useCreateLead} from "../../../hooks/queries/use-create-lead";
-import {useProduct, useProducts} from "../../../hooks/queries/use-products";
 import {ApiError} from "../../../api/client";
 import {formatPhoneRu, isPhoneRuComplete} from "../../../utils/phone";
 import s from "./consultation-modal.module.css";
@@ -25,11 +24,6 @@ export function ConsultationModal({open, onClose, onExited, variantId, productNa
 		const [form, setForm] = useState(initialForm);
 
 		const createLead = useCreateLead();
-		const {data: products} = useProducts();
-		const needsFallback = !variantId && Boolean(products?.[0]?.slug);
-		const {data: fallbackProduct} = useProduct(needsFallback ? products[0].slug : undefined);
-
-		const resolvedVariantId = variantId ?? fallbackProduct?.variants?.[0]?.id;
 
 		function update(field) {
 				return (event) => {
@@ -51,14 +45,9 @@ export function ConsultationModal({open, onClose, onExited, variantId, productNa
 				event.preventDefault();
 				if (!isPhoneRuComplete(form.phone)) return;
 
-				if (!resolvedVariantId) {
-						toast.error("Каталог ещё загружается, попробуйте через пару секунд");
-						return;
-				}
-
 				createLead.mutate(
 						{
-								variantId: resolvedVariantId,
+								variantId,
 								customerName: form.name,
 								phone: form.phone,
 								comment: form.comment,

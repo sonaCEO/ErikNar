@@ -136,10 +136,16 @@ export function LeadsPage() {
 																				<span className={s.phone}>{lead.customer_phone}</span>
 																		</span>
 																		<span className={s.cellProduct}>
-																				{lead.snapshot.product_name}
-																				<span className={s.price}>
-																						{formatPriceMinor(lead.snapshot.price_minor, lead.snapshot.currency)}
-																				</span>
+																				{lead.snapshot ? (
+																						<>
+																								{lead.snapshot.product_name}
+																								<span className={s.price}>
+																										{formatPriceMinor(lead.snapshot.price_minor, lead.snapshot.currency)}
+																								</span>
+																						</>
+																				) : (
+																						"Консультация"
+																				)}
 																		</span>
 																		<span className={s.cellAssignee}>
 																				{lead.assigned_to ? lead.assigned_to.name : "—"}
