@@ -164,7 +164,7 @@ class OutboxProcessor:
                         format_topic_name(
                             lead.number,
                             lead.status,
-                            str(lead.snapshot["model_code"]),
+                            str(lead.snapshot["model_code"]) if lead.snapshot else None,
                             None,
                         )
                     )
@@ -273,7 +273,7 @@ class OutboxProcessor:
                 format_topic_name(
                     lead.number,
                     lead.status,
-                    str(lead.snapshot["model_code"]),
+                    str(lead.snapshot["model_code"]) if lead.snapshot else None,
                     assignee_name,
                 ),
             )

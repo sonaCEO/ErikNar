@@ -93,6 +93,7 @@ async def test_create_lead_copies_complete_variant_snapshot(
 
         result = await LeadService(session).create(_command(variant.id), "request-1")
 
+        assert result.snapshot is not None
         assert result.snapshot.product_name == "Лесенка"
         assert result.snapshot.sku == f"ER-B-{availability.value}"
         assert result.snapshot.width_mm == 500
@@ -102,6 +103,28 @@ async def test_create_lead_copies_complete_variant_snapshot(
         assert result.snapshot.control_type.name.startswith("Сенсорная")
         assert result.snapshot.price_minor == 1_260_000
         assert result.snapshot.currency == "RUB"
+    await engine.dispose()
+
+
+@pytest.mark.anyio
+async def test_create_lead_without_variant_has_no_snapshot(migrated_postgres_url: str) -> None:
+    session, engine = await _session(migrated_postgres_url)
+    async with session:
+        command = CreateLeadCommand(
+            variant_id=None,
+            customer_name="Анна",
+            phone="8 (999) 000-00-00",
+            comment="Хочу консультацию по индивидуальному заказу",
+            source=LeadSource.WEBSITE,
+        )
+
+        result = await LeadService(session).create(command, "request-no-variant")
+
+        assert result.snapshot is None
+        stored = await session.scalar(select(Lead).where(Lead.public_id == result.public_id))
+        assert stored is not None
+        assert stored.variant_id is None
+        assert stored.snapshot is None
     await engine.dispose()
 
 
@@ -138,6 +161,7 @@ async def test_lead_snapshot_does_not_change_with_catalog_price(
         stored = await session.scalar(select(Lead).where(Lead.public_id == result.public_id))
 
         assert stored is not None
+        assert stored.snapshot is not None
         assert stored.snapshot["price_minor"] == 1_260_000
     await engine.dispose()
 

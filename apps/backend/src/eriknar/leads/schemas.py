@@ -9,7 +9,7 @@ Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max
 
 
 class CreateLeadCommand(BaseModel):
-    variant_id: UUID
+    variant_id: UUID | None = None
     customer_name: Name
     phone: str = Field(min_length=5, max_length=40)
     comment: str = Field(default="", max_length=2000)
@@ -41,12 +41,18 @@ class LeadResult(BaseModel):
     public_id: UUID
     number: int
     status: LeadStatus
-    snapshot: LeadSnapshot
+    snapshot: LeadSnapshot | None
     created: bool = True
 
 
 class CreateLeadRequest(BaseModel):
-    variant_id: UUID = Field(description="ID выбранной комплектации из карточки товара")
+    variant_id: UUID | None = Field(
+        default=None,
+        description=(
+            "ID выбранной комплектации из карточки товара. "
+            "Не указывается для общей консультации или заявки на индивидуальный заказ."  # noqa: RUF001
+        ),
+    )
     customer_name: Name
     phone: str = Field(min_length=5, max_length=40)
     comment: str = Field(default="", max_length=2000)
@@ -69,6 +75,6 @@ class LeadActionResult(BaseModel):
     assigned_to_name: str | None = None
     status: LeadStatus
     number: int
-    model_code: str
+    model_code: str | None
     telegram_topic_id: int | None
     claimed: bool | None = None

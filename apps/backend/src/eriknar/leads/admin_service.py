@@ -199,7 +199,7 @@ class AdminLeadService:
             customer_name=lead.customer_name,
             customer_phone=lead.customer_phone,
             comment=lead.comment,
-            snapshot=LeadSnapshot.model_validate(lead.snapshot),
+            snapshot=LeadSnapshot.model_validate(lead.snapshot) if lead.snapshot else None,
             assigned_to=assignee,
             assigned_at=lead.assigned_at,
             closed_at=lead.closed_at,

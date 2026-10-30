@@ -15,12 +15,13 @@ def format_lead_number(number: int) -> str:
 def format_topic_name(
     number: int,
     status: LeadStatus,
-    model_code: str,
+    model_code: str | None,
     assignee_name: str | None,
 ) -> str:
     lead_number = format_lead_number(number)
     if status is LeadStatus.NEW:
-        return f"🆕 {lead_number} · Новая · Модель {model_code}"
+        subject = f"Модель {model_code}" if model_code else "Консультация"
+        return f"🆕 {lead_number} · Новая · {subject}"
     if status is LeadStatus.COMPLETED:
         return f"✅ {lead_number} · Завершена"
     if status is LeadStatus.CANCELLED:
@@ -47,7 +48,7 @@ def format_lead_card(
     number: int,
     customer_name: str,
     phone: str,
-    snapshot: Mapping[str, object],
+    snapshot: Mapping[str, object] | None,
     comment: str,
 ) -> str:
     lines = [
@@ -56,14 +57,22 @@ def format_lead_card(
         f"<b>Клиент:</b> {escape(customer_name)}",
         f"<b>Телефон:</b> <code>{escape(phone)}</code>",
         "",
-        f"<b>Модель:</b> {escape(str(snapshot['product_name']))}",
-        f"<b>Артикул:</b> <code>{escape(str(snapshot['sku']))}</code>",
-        f"<b>Размер:</b> {snapshot['height_mm']} × {snapshot['width_mm']} мм",  # noqa: RUF001
-        f"<b>Цвет:</b> {_name(snapshot, 'body_color')}",
-        f"<b>Панель:</b> {_name(snapshot, 'panel_color')}",
-        f"<b>Управление:</b> {_name(snapshot, 'control_type')}",
-        f"<b>Цена:</b> {_price(int(str(snapshot['price_minor'])), str(snapshot['currency']))}",
     ]
+    if snapshot is None:
+        lines.append("<b>Запрос:</b> Консультация / индивидуальный заказ")
+    else:
+        lines.extend(
+            [
+                f"<b>Модель:</b> {escape(str(snapshot['product_name']))}",
+                f"<b>Артикул:</b> <code>{escape(str(snapshot['sku']))}</code>",
+                f"<b>Размер:</b> {snapshot['height_mm']} × {snapshot['width_mm']} мм",  # noqa: RUF001
+                f"<b>Цвет:</b> {_name(snapshot, 'body_color')}",
+                f"<b>Панель:</b> {_name(snapshot, 'panel_color')}",
+                f"<b>Управление:</b> {_name(snapshot, 'control_type')}",
+                f"<b>Цена:</b> "
+                f"{_price(int(str(snapshot['price_minor'])), str(snapshot['currency']))}",
+            ]
+        )
     if comment:
         lines.extend(["", f"<b>Комментарий:</b> {escape(comment)}"])
     return "\n".join(lines)
@@ -90,7 +99,7 @@ def format_archive_card(
     status: LeadStatus,
     customer_name: str,
     phone: str,
-    snapshot: Mapping[str, object],
+    snapshot: Mapping[str, object] | None,
     assignee_name: str | None,
     created_at: str,
     closed_at: str,
@@ -100,10 +109,21 @@ def format_archive_card(
         f"<b>{format_lead_number(number)} · {status_label}</b>",
         f"<b>Клиент:</b> {escape(customer_name)}",
         f"<b>Телефон:</b> <code>{escape(phone)}</code>",
-        f"<b>Модель:</b> {escape(str(snapshot['product_name']))}",
-        f"<b>Комплектация:</b> <code>{escape(str(snapshot['sku']))}</code>",
-        f"<b>Ответственная:</b> {escape(assignee_name or 'Не назначена')}",  # noqa: RUF001
-        f"<b>Создана:</b> {escape(created_at)}",
-        f"<b>Закрыта:</b> {escape(closed_at)}",
     ]
+    if snapshot is None:
+        lines.append("<b>Запрос:</b> Консультация / индивидуальный заказ")
+    else:
+        lines.extend(
+            [
+                f"<b>Модель:</b> {escape(str(snapshot['product_name']))}",
+                f"<b>Комплектация:</b> <code>{escape(str(snapshot['sku']))}</code>",
+            ]
+        )
+    lines.extend(
+        [
+            f"<b>Ответственная:</b> {escape(assignee_name or 'Не назначена')}",  # noqa: RUF001
+            f"<b>Создана:</b> {escape(created_at)}",
+            f"<b>Закрыта:</b> {escape(closed_at)}",
+        ]
+    )
     return "\n".join(lines)

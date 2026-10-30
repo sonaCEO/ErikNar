@@ -123,7 +123,7 @@ def _result(lead: Lead, *, created: bool) -> LeadResult:
         public_id=lead.public_id,
         number=lead.number,
         status=lead.status,
-        snapshot=LeadSnapshot.model_validate(lead.snapshot),
+        snapshot=LeadSnapshot.model_validate(lead.snapshot) if lead.snapshot else None,
         created=created,
     )
 
@@ -144,16 +144,18 @@ class LeadService:
                     raise IdempotencyConflictError(idempotency_key)
                 return _result(existing, created=False)
 
-            variant = await self._leads.get_variant(command.variant_id)
-            if (
-                variant is None
-                or not variant.is_active
-                or not variant.product.is_published
-                or variant.product.archived_at is not None
-                or variant.availability_status
-                in {AvailabilityStatus.HIDDEN, AvailabilityStatus.OUT_OF_STOCK}
-            ):
-                raise VariantUnavailableError(command.variant_id)
+            variant = None
+            if command.variant_id is not None:
+                variant = await self._leads.get_variant(command.variant_id)
+                if (
+                    variant is None
+                    or not variant.is_active
+                    or not variant.product.is_published
+                    or variant.product.archived_at is not None
+                    or variant.availability_status
+                    in {AvailabilityStatus.HIDDEN, AvailabilityStatus.OUT_OF_STOCK}
+                ):
+                    raise VariantUnavailableError(command.variant_id)
 
             phone = normalize_russian_phone(command.phone)
             await self._leads.lock_customer_phone(phone)
@@ -167,13 +169,13 @@ class LeadService:
                 self._leads.add_customer(customer)
                 await self._session.flush()
 
-            snapshot = _snapshot(variant)
+            snapshot = _snapshot(variant) if variant is not None else None
             lead = Lead(
                 customer_id=customer.id,
-                variant_id=variant.id,
+                variant_id=variant.id if variant is not None else None,
                 source=command.source,
                 status=LeadStatus.NEW,
-                snapshot=snapshot.model_dump(mode="json"),
+                snapshot=snapshot.model_dump(mode="json") if snapshot is not None else None,
                 customer_name=command.customer_name,
                 customer_phone=command.phone,
                 comment=command.comment,
@@ -256,6 +258,6 @@ class LeadService:
             assigned_to_user_id=user_id,
             status=target,
             number=lead.number,
-            model_code=str(lead.snapshot["model_code"]),
+            model_code=str(lead.snapshot["model_code"]) if lead.snapshot else None,
             telegram_topic_id=lead.telegram_topic_id,
         )

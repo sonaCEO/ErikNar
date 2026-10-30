@@ -46,6 +46,20 @@ def test_lead_card_contains_snapshot_and_escapes_customer_text() -> None:
     assert "Позвонить после 18:00 &amp; уточнить" in message
 
 
+def test_lead_card_without_snapshot_shows_consultation_marker() -> None:
+    message = format_lead_card(
+        number=8,
+        customer_name="Анна",
+        phone="+7 999 000-00-00",
+        snapshot=None,
+        comment="Нужна консультация по подбору модели",
+    )
+
+    assert "№0008" in message
+    assert "Консультация" in message
+    assert "Модель" not in message
+
+
 @pytest.mark.parametrize(
     ("status", "assignee_name", "expected"),
     [
@@ -59,6 +73,13 @@ def test_topic_name_describes_lead_state(
     status: LeadStatus, assignee_name: str | None, expected: str
 ) -> None:
     assert format_topic_name(7, status, "B", assignee_name) == expected
+
+
+def test_topic_name_marks_consultation_when_no_model_code() -> None:
+    assert (
+        format_topic_name(8, LeadStatus.NEW, None, None)
+        == "🆕 №0008 · Новая · Консультация"
+    )
 
 
 def test_topic_name_truncates_only_long_assignee_to_telegram_limit() -> None:

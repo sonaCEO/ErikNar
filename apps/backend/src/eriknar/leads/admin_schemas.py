@@ -33,7 +33,7 @@ class AdminLeadView(BaseModel):
     customer_name: str
     customer_phone: str
     comment: str
-    snapshot: LeadSnapshot
+    snapshot: LeadSnapshot | None
     assigned_to: AssigneeView | None
     assigned_at: datetime | None
     closed_at: datetime | None
