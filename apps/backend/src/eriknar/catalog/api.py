@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from eriknar.api.errors import ErrorResponse
 from eriknar.catalog.repository import CatalogRepository
-from eriknar.catalog.schemas import ProductDetail, ProductSummary
+from eriknar.catalog.schemas import ProductDetail, ProductSummaryPage
 from eriknar.catalog.service import CatalogService
 from eriknar.core.config import get_settings
 from eriknar.db.session import get_session
@@ -28,11 +28,13 @@ def get_catalog_service(
     return CatalogService(CatalogRepository(session), media_url=storage.public_url)
 
 
-@router.get("", response_model=list[ProductSummary])
+@router.get("", response_model=ProductSummaryPage)
 async def list_products(
     service: Annotated[CatalogService, Depends(get_catalog_service)],
-) -> list[ProductSummary]:
-    return await service.list_products()
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> ProductSummaryPage:
+    return await service.list_products(page, page_size)
 
 
 @router.get(

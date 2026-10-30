@@ -68,6 +68,13 @@ class ProductSummary(BaseModel):
     primary_image_url: str | None
 
 
+class ProductSummaryPage(BaseModel):
+    items: list[ProductSummary]
+    page: int
+    page_size: int
+    total: int
+
+
 class ProductDetail(BaseModel):
     id: UUID
     slug: str

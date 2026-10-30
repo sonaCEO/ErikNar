@@ -40,3 +40,10 @@ class UpdateEmployeeCommand(BaseModel):
     role: UserRole | None = None
     is_active: bool | None = None
     telegram_user_id: int | None = None
+
+
+class UserPage(BaseModel):
+    items: list[UserView]
+    page: int
+    page_size: int
+    total: int

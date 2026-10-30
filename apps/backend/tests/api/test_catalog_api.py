@@ -26,8 +26,11 @@ class CatalogRepositoryStub:
             return None
         return self.product
 
-    async def list_published(self) -> list[Product]:
+    async def list_published(self, *, page: int, page_size: int) -> list[Product]:
         return [self.product] if self.product is not None else []
+
+    async def count_published(self) -> int:
+        return 1 if self.product is not None else 0
 
 
 def _catalog_product() -> Product:
@@ -120,9 +123,13 @@ async def test_catalog_list_returns_public_json_contract() -> None:
         response = await client.get("/api/v1/catalog/products")
 
     assert response.status_code == 200
-    assert response.json() == [
+    payload = response.json()
+    assert payload["page"] == 1
+    assert payload["page_size"] == 20
+    assert payload["total"] == 1
+    assert payload["items"] == [
         {
-            "id": response.json()[0]["id"],
+            "id": payload["items"][0]["id"],
             "slug": "lesenka",
             "name": "Лесенка",
             "model_code": "B",
@@ -132,6 +139,17 @@ async def test_catalog_list_returns_public_json_contract() -> None:
             "primary_image_url": "/product-media/first.webp",
         }
     ]
+
+
+@pytest.mark.anyio
+async def test_catalog_list_honors_pagination_params() -> None:
+    async with await _client_for(_catalog_product()) as client:
+        response = await client.get("/api/v1/catalog/products?page=2&page_size=5")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["page"] == 2
+    assert payload["page_size"] == 5
 
 
 @pytest.mark.anyio
@@ -187,7 +205,7 @@ async def test_openapi_contains_catalog_operations() -> None:
 @pytest.mark.anyio
 async def test_internal_error_does_not_expose_database_details() -> None:
     class FailingCatalogService:
-        async def list_products(self) -> list[object]:
+        async def list_products(self, page: int = 1, page_size: int = 20) -> list[object]:
             raise RuntimeError("postgresql://user:secret@database/internal")
 
     app = create_app()

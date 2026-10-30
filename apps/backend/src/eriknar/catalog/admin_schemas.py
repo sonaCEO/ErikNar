@@ -77,6 +77,8 @@ class ReferenceView(BaseModel):
     slug: str
     name: str
     is_active: bool
+    created_at: datetime
+    updated_at: datetime
 
 
 class BodyColorAdminView(ReferenceView):

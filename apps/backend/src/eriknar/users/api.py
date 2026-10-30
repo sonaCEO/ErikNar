@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from eriknar.core.config import Settings, get_settings
@@ -13,6 +13,7 @@ from eriknar.users.schemas import (
     LoginRequest,
     TokenResponse,
     UpdateEmployeeCommand,
+    UserPage,
     UserView,
 )
 from eriknar.users.security import create_access_token
@@ -54,6 +55,27 @@ async def create_employee(
 ) -> UserView:
     del admin
     return await service.create_employee(payload)
+
+
+@router.get("/admin/users", response_model=UserPage, tags=["admin-users"])
+async def list_employees(
+    admin: Annotated[User, Depends(require_admin)],
+    service: Annotated[EmployeeService, Depends(get_employee_service)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> UserPage:
+    del admin
+    return await service.list_employees(page, page_size)
+
+
+@router.get("/admin/users/{user_id}", response_model=UserView, tags=["admin-users"])
+async def get_employee(
+    user_id: UUID,
+    admin: Annotated[User, Depends(require_admin)],
+    service: Annotated[EmployeeService, Depends(get_employee_service)],
+) -> UserView:
+    del admin
+    return await service.get_employee(user_id)
 
 
 @router.patch("/admin/users/{user_id}", response_model=UserView, tags=["admin-users"])

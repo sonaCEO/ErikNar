@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.base import ExecutableOption
@@ -32,11 +32,19 @@ class CatalogRepository:
         )
         return await self._session.scalar(statement)
 
-    async def list_published(self) -> list[Product]:
+    async def list_published(self, *, page: int, page_size: int) -> list[Product]:
         statement = (
             select(Product)
             .where(Product.is_published.is_(True), Product.archived_at.is_(None))
             .order_by(Product.sort_order, Product.name, Product.id)
             .options(*_catalog_load_options())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
         )
         return list((await self._session.scalars(statement)).unique())
+
+    async def count_published(self) -> int:
+        statement = select(func.count()).select_from(Product).where(
+            Product.is_published.is_(True), Product.archived_at.is_(None)
+        )
+        return await self._session.scalar(statement) or 0
