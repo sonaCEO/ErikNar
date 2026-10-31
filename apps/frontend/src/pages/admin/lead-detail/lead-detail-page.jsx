@@ -12,11 +12,8 @@ import {ApiError} from "../../../api/client";
 import {Badge} from "../../../components/ui/badge/badge";
 import {Button} from "../../../components/ui/button/button";
 import {Textarea} from "../../../components/ui/textarea/textarea";
-import {Input} from "../../../components/ui/input/input";
 import {Select} from "../../../components/ui/select/select";
-import {useSessionRecords} from "../../../hooks/queries/use-admin-catalog";
-import {queryKeys} from "../../../hooks/queries/query-keys";
-import {UUID_PATTERN} from "../products/product-form";
+import {useEmployees} from "../../../hooks/queries/use-admin-users";
 import {RequestState} from "../admin-ui";
 import {Text} from "../../../components/ui/typography/text/text";
 import {Title} from "../../../components/ui/typography/title/title";
@@ -63,8 +60,7 @@ export function LeadDetailPage() {
 
 		const [comment, setComment] = useState("");
 		const [assigneeId, setAssigneeId] = useState("");
-		const [manualAssignee, setManualAssignee] = useState(false);
-		const employees = useSessionRecords(queryKeys.adminEmployees);
+		const {data: employees = []} = useEmployees({enabled: user?.role === "admin"});
 
 		const actionPending = claim.isPending || changeStatus.isPending || assign.isPending;
 
@@ -271,12 +267,9 @@ export function LeadDetailPage() {
 																				compact
 																				label="Назначить сотрудника"
 																				required
-																				value={manualAssignee ? "manual" : assigneeId}
+																				value={assigneeId}
 																				disabled={actionPending}
-																				onChange={(event) => {
-																						setManualAssignee(event.target.value === "manual");
-																						setAssigneeId(event.target.value === "manual" ? "" : event.target.value);
-																				}}
+																				onChange={(event) => setAssigneeId(event.target.value)}
 																		>
 																				<option value="">Выберите сотрудника</option>
 																				{assignees.map((employee) => (
@@ -285,20 +278,7 @@ export function LeadDetailPage() {
 																								{employee.id === user.id ? " (вы)" : ""}
 																						</option>
 																				))}
-																				<option value="manual">Другой сотрудник</option>
 																		</Select>
-
-																		{manualAssignee && (
-																				<Input
-																						compact
-																						label="ID сотрудника"
-																						required
-																						pattern={UUID_PATTERN}
-																						value={assigneeId}
-																						disabled={actionPending}
-																						onChange={(event) => setAssigneeId(event.target.value)}
-																				/>
-																		)}
 
 																		<Button
 																				type="submit"

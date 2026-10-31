@@ -1,11 +1,8 @@
 import {useState} from "react";
-import {skipToken, useQuery} from "@tanstack/react-query";
 import {Plus, Pencil} from "lucide-react";
 import {toast} from "sonner";
 import {createCatalogOption, createVariant, updateVariant} from "../../../api/admin/catalog";
-import {getProduct} from "../../../api/catalog";
-import {useCatalogMutation, useCatalogOptions, useSessionRecords} from "../../../hooks/queries/use-admin-catalog";
-import {queryKeys} from "../../../hooks/queries/query-keys";
+import {useAdminVariants, useCatalogMutation, useCatalogOptions} from "../../../hooks/queries/use-admin-catalog";
 import {Badge} from "../../../components/ui/badge/badge";
 import {Button} from "../../../components/ui/button/button";
 import {Input} from "../../../components/ui/input/input";
@@ -15,7 +12,7 @@ import {Title} from "../../../components/ui/typography/title/title";
 import {Spinner} from "../../../components/ui/spinner/spinner";
 import {formatPriceMinor} from "../../../utils/format";
 import {AdminDialog, EmptyState, FormError, RequestState} from "../admin-ui";
-import {AVAILABILITY_LABELS, integer, MAX_INTEGER, minorToPrice, priceToMinor, UUID_PATTERN} from "./product-form";
+import {AVAILABILITY_LABELS, integer, MAX_INTEGER, minorToPrice, priceToMinor} from "./product-form";
 import s from "../admin.module.css";
 import p from "./products.module.css";
 
@@ -122,46 +119,25 @@ function OptionForm({option, onClose, onCreated}) {
 }
 
 function ReferenceField({option, values, value, onChange, onAdd}) {
-		const [manual, setManual] = useState(false);
+		const choices = values.filter((item) => item.is_active !== false);
 
 		return (
 				<div className={p.referenceField}>
 						<Select
 								compact
 								label={option.label}
-								value={manual ? "manual" : value}
+								value={value}
 								required
-								onChange={(event) => {
-										setManual(event.target.value === "manual");
-										onChange(event.target.value === "manual" ? "" : event.target.value);
-								}}
+								onChange={(event) => onChange(event.target.value)}
 						>
 								<option value="">Выберите значение</option>
-								{values.map((item) => (
+								{choices.map((item) => (
 										<option key={item.id} value={item.id}>
 												{item.name}
 										</option>
 								))}
-								<option value="manual">Указать ID</option>
 						</Select>
-						{manual && (
-								<Input
-										compact
-										label={`ID: ${option.label.toLowerCase()}`}
-										required
-										pattern={UUID_PATTERN}
-										value={value}
-										onChange={(event) => onChange(event.target.value)}
-								/>
-						)}
-						<Button
-								size="compact"
-								variant="soft"
-								onClick={() => {
-										setManual(false);
-										onAdd();
-								}}
-						>
+						<Button size="compact" variant="soft" onClick={onAdd}>
 								<Plus size={13}/> Добавить значение
 						</Button>
 				</div>
@@ -331,7 +307,6 @@ function VariantEditor({product, variant, onSaved, onClose}) {
 		const save = useCatalogMutation((body) => updateVariant(variant.id, body), {
 				kind: "variant",
 				product,
-				variantId: variant.id,
 		});
 
 		async function submit(event) {
@@ -410,7 +385,6 @@ function VariantEditor({product, variant, onSaved, onClose}) {
 												size="compact"
 												variant="ginger"
 												isLoading={save.isPending}
-												disabled={error?.code === "concurrent_update"}
 										>
 												Сохранить комплектацию
 										</Button>
@@ -421,24 +395,16 @@ function VariantEditor({product, variant, onSaved, onClose}) {
 }
 
 export function ProductVariants({product}) {
-		const known = useSessionRecords(queryKeys.adminVariants(product.id));
 		const catalog = useCatalogOptions();
-		const published = useQuery({
-				queryKey: queryKeys.product(product.slug),
-				queryFn:
-						product.is_published && !product.archived_at
-								? ({signal}) => getProduct(product.slug, signal)
-								: skipToken,
-		});
+		const variantsQuery = useAdminVariants(product.id);
+		const variants = variantsQuery.data ?? [];
 		const [creating, setCreating] = useState(false);
-		const [editing, setEditing] = useState(null);
-		const publicVariants = product.is_published && !product.archived_at ? published.data?.variants ?? [] : [];
-		const waitingForPublic = product.is_published && !product.archived_at && (published.isPending || published.isError);
-		const variants = [...known, ...publicVariants.filter((variant) => !known.some((record) => record.id === variant.id))];
+		const [editingId, setEditingId] = useState(null);
+		const editing = variants.find((variant) => variant.id === editingId) ?? null;
 
 		function saveRecord() {
 				setCreating(false);
-				setEditing(null);
+				setEditingId(null);
 		}
 
 		return (
@@ -471,14 +437,12 @@ export function ProductVariants({product}) {
 								</>
 						)}
 
-						{product.is_published && !product.archived_at && (
-								<RequestState
-										pending={published.isPending}
-										error={published.error}
-										onRetry={published.refetch}
-										isFetching={published.isFetching}
-								/>
-						)}
+						<RequestState
+								pending={variantsQuery.isPending}
+								error={variantsQuery.error}
+								onRetry={variantsQuery.refetch}
+								isFetching={variantsQuery.isFetching}
+						/>
 
 						{variants.length ? (
 								<div className={s.tableWrap}>
@@ -537,8 +501,8 @@ export function ProductVariants({product}) {
 																				</Badge>
 																		</td>
 																		<td>
-																				{variant.updated_at && !variant.readOnly && !product.archived_at ? (
-																						<Button size="compact" variant="soft" onClick={() => setEditing(variant)}>
+																				{variant.updated_at && !product.archived_at ? (
+																						<Button size="compact" variant="soft" onClick={() => setEditingId(variant.id)}>
 																								<Pencil size={14}/> Изменить
 																						</Button>
 																				) : (
@@ -552,7 +516,7 @@ export function ProductVariants({product}) {
 										</table>
 								</div>
 						) : (
-								!waitingForPublic && (
+								!variantsQuery.isPending && !variantsQuery.error && (
 										<EmptyState>
 												<p>Нет доступных комплектаций.</p>
 										</EmptyState>
@@ -560,8 +524,12 @@ export function ProductVariants({product}) {
 						)}
 
 						{editing && (
-								<VariantEditor product={product} variant={editing} onSaved={saveRecord}
-															 onClose={() => setEditing(null)}/>
+								<VariantEditor
+										product={product}
+										variant={editing}
+										onSaved={saveRecord}
+										onClose={() => setEditingId(null)}
+								/>
 						)}
 				</div>
 		);

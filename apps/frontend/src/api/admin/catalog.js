@@ -25,6 +25,22 @@ export function archiveProduct(id, updatedAt) {
 		});
 }
 
+export function fetchBodyColors(signal) {
+		return apiFetch(`${ROOT}/body-colors`, {signal});
+}
+
+export function fetchPanelColors(signal) {
+		return apiFetch(`${ROOT}/panel-colors`, {signal});
+}
+
+export function fetchControlTypes(signal) {
+		return apiFetch(`${ROOT}/control-types`, {signal});
+}
+
+export function fetchVariants(productId, signal) {
+		return apiFetch(`${ROOT}/variants${toQueryString({product_id: productId})}`, {signal});
+}
+
 export function createVariant(body) {
 		return apiFetch(`${ROOT}/variants`, {method: "POST", body});
 }

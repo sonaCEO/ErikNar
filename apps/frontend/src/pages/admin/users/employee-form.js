@@ -1,13 +1,12 @@
-export function employeeDraft(mode, userId = "") {
+export function employeeDraft(mode) {
 		return {
-				user_id: userId,
 				name: "",
 				login: "",
 				password: "",
 				role: mode === "create" ? "manager" : "",
 				is_active: "",
 				telegram_action: mode === "create" ? "set" : "keep",
-				telegram_user_id: ""
+				telegram_user_id: "",
 		};
 }
 
@@ -16,7 +15,9 @@ export function employeePayload(draft, mode) {
 		if (mode === "create" || draft.name.trim()) body.name = draft.name.trim();
 		if (mode === "create") body.login = draft.login.trim();
 		if (mode === "create" || draft.password) {
-				if (draft.password.length < 12 || draft.password.length > 128) throw new Error("Пароль должен содержать от 12 до 128 символов.");
+				if (draft.password.length < 12 || draft.password.length > 128) {
+						throw new Error("Пароль должен содержать от 12 до 128 символов.");
+				}
 				body.password = draft.password;
 		}
 		if (draft.role) body.role = draft.role;
@@ -26,9 +27,13 @@ export function employeePayload(draft, mode) {
 		else if (draft.telegram_action === "set") {
 				const value = draft.telegram_user_id.trim();
 				if (value) {
-						if (!/^-?\d+$/.test(value) || !Number.isSafeInteger(Number(value))) throw new Error("Telegram ID должен быть целым числом в безопасном диапазоне.");
+						if (!/^-?\d+$/.test(value) || !Number.isSafeInteger(Number(value))) {
+								throw new Error("Telegram ID должен быть целым числом в безопасном диапазоне.");
+						}
 						body.telegram_user_id = Number(value);
-				} else if (mode === "edit") throw new Error("Укажите Telegram ID или выберите действие «Отвязать».");
+				} else if (mode === "edit") {
+						throw new Error("Укажите Telegram ID или выберите действие «Отвязать».");
+				}
 		}
 		if (!Object.keys(body).length) throw new Error("Укажите хотя бы одно изменение.");
 		return body;

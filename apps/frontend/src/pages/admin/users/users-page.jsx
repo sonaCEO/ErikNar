@@ -1,32 +1,29 @@
 import {useState} from "react";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useNavigate} from "react-router";
-import {Plus, Pencil, UserRound} from "lucide-react";
+import {Plus, Pencil} from "lucide-react";
 import {toast} from "sonner";
 import clsx from "clsx";
 import {createEmployee, updateEmployee} from "../../../api/admin/users";
 import {useAuth} from "../../../auth/auth-context";
 import {queryKeys} from "../../../hooks/queries/query-keys";
-import {useSessionRecords} from "../../../hooks/queries/use-admin-catalog";
+import {useEmployee, useEmployeePage} from "../../../hooks/queries/use-admin-users";
 import {Badge} from "../../../components/ui/badge/badge";
 import {Button} from "../../../components/ui/button/button";
 import {Input} from "../../../components/ui/input/input";
 import {Select} from "../../../components/ui/select/select";
 import {Title} from "../../../components/ui/typography/title/title";
-import {ConfirmDialog, FormError} from "../admin-ui";
-import {UUID_PATTERN} from "../products/product-form";
+import {ConfirmDialog, EmptyState, FormError, Pagination, RequestState} from "../admin-ui";
 import {employeeDraft, employeePayload} from "./employee-form";
 import s from "../admin.module.css";
 
-function EmployeeForm({mode, userId, onSaved, selfId}) {
-		const [draft, setDraft] = useState(() => employeeDraft(mode, userId));
+function EmployeeForm({mode, employeeId, onSaved, selfId}) {
+		const employee = useEmployee(mode === "edit" ? employeeId : null);
+		const [draft, setDraft] = useState(() => employeeDraft(mode));
 		const [error, setError] = useState(null);
 		const [confirmation, setConfirmation] = useState(null);
 		const save = useMutation({
-				mutationFn: ({
-												 id,
-												 body,
-										 }) => mode === "create" ? createEmployee(body) : updateEmployee(id, body),
+				mutationFn: ({id, body}) => mode === "create" ? createEmployee(body) : updateEmployee(id, body),
 		});
 		const field = (name) => ({
 				value: draft[name],
@@ -38,7 +35,7 @@ function EmployeeForm({mode, userId, onSaved, selfId}) {
 				try {
 						const result = await save.mutateAsync(request);
 						setConfirmation(null);
-						setDraft(employeeDraft(mode, mode === "edit" ? result.id : ""));
+						setDraft(employeeDraft(mode));
 						await onSaved(result, request.body);
 				} catch (err) {
 						setError(err);
@@ -49,7 +46,7 @@ function EmployeeForm({mode, userId, onSaved, selfId}) {
 				event.preventDefault();
 				setError(null);
 				try {
-						const request = {id: draft.user_id.trim(), body: employeePayload(draft, mode)};
+						const request = {id: employeeId, body: employeePayload(draft, mode)};
 						if (mode === "edit" && (request.body.is_active === false || (request.id === selfId && request.body.role === "manager"))) {
 								setConfirmation(request);
 						} else {
@@ -64,20 +61,21 @@ function EmployeeForm({mode, userId, onSaved, selfId}) {
 				<>
 						<form className={s.card} onSubmit={submit}>
 								<Title level={3}>{mode === "create" ? "Новый сотрудник" : "Изменить сотрудника"}</Title>
-								{mode === "edit" && <p className={s.hint}>Изменятся только заполненные поля.</p>}
-								<fieldset className={s.grid} disabled={save.isPending}>
-										{mode === "edit" && (
-												<Input
-														compact
-														className={s.fullWidth}
-														label="ID сотрудника"
-														required
-														pattern={UUID_PATTERN}
-														{...field("user_id")}
-												/>
-										)}
-										<Input compact label="Имя сотрудника" required={mode === "create"}
-													 maxLength={120} {...field("name")} />
+								{mode === "edit" && employee.data && (
+										<p className={s.hint}>
+												{employee.data.name} · {employee.data.login}. Изменятся только заполненные поля.
+										</p>
+								)}
+								{mode === "edit" && (
+										<RequestState
+												pending={employee.isPending}
+												error={employee.error}
+												onRetry={employee.refetch}
+												isFetching={employee.isFetching}
+										/>
+								)}
+								<fieldset className={s.grid} disabled={save.isPending || (mode === "edit" && !employee.data)}>
+										<Input compact label="Имя сотрудника" required={mode === "create"} maxLength={120} {...field("name")} />
 										{mode === "create" && (
 												<Input compact label="Логин" required maxLength={120} autoComplete="off" {...field("login")} />
 										)}
@@ -155,15 +153,12 @@ export function UsersPage() {
 		const {user, logout} = useAuth();
 		const navigate = useNavigate();
 		const client = useQueryClient();
-		const records = useSessionRecords(queryKeys.adminEmployees);
-		const users = [...new Map([user, ...records].filter(Boolean).map((item) => [item.id, item])).values()];
-		const [editor, setEditor] = useState({mode: "create", id: ""});
+		const [page, setPage] = useState(1);
+		const [editor, setEditor] = useState({mode: "create", id: null});
+		const {data, isPending, error, isFetching, isPlaceholderData, refetch} = useEmployeePage(page);
 
 		async function saved(result, body) {
-				client.setQueryData(
-						queryKeys.adminEmployees,
-						(current = []) => [...current.filter((item) => item.id !== result.id), result]
-				);
+				await client.invalidateQueries({queryKey: ["admin", "users"]});
 				if (result.id === user.id) {
 						if (body.password || (body.role && body.role !== user.role) || body.is_active === false) {
 								logout();
@@ -184,71 +179,81 @@ export function UsersPage() {
 						<header className={s.header}>
 								<div>
 										<Title level={1}>Сотрудники</Title>
-										<p className={s.muted}>Учётные записи, роли и привязка Telegram.</p>
+										<p className={s.muted}>
+												Учётные записи, роли и привязка Telegram{data ? ` · Всего: ${data.total}` : ""}
+										</p>
 								</div>
-						</header>
-						<div className={clsx(s.tableWrap, s.responsiveWrap)}>
-								<table className={clsx(s.table, s.responsiveTable)}>
-										<thead>
-										<tr>
-												<th scope="col">Сотрудник</th>
-												<th scope="col">Роль</th>
-												<th scope="col">Доступ</th>
-												<th scope="col">Действия</th>
-										</tr>
-										</thead>
-										<tbody>
-										{users.map((employee) => (
-												<tr key={employee.id}>
-														<td>
-                  <span className={s.name}>
-                    {employee.name}
-											{employee.id === user.id ? " (вы)" : ""}
-                  </span>
-																<span className={s.subline}>{employee.login}</span>
-														</td>
-														<td data-label="Роль">{employee.role === "admin" ? "Администратор" : "Менеджер"}</td>
-														<td data-label="Доступ">
-																<Badge variant={employee.is_active ? "in_stock" : "out_of_stock"}>
-																		{employee.is_active ? "Активен" : "Отключён"}
-																</Badge>
-														</td>
-														<td>
-																<Button size="compact" variant="soft"
-																				onClick={() => setEditor({mode: "edit", id: employee.id})}>
-																		<Pencil size={14}/> Изменить
-																</Button>
-														</td>
-												</tr>
-										))}
-										</tbody>
-								</table>
-						</div>
-						<div className={s.actions} role="group" aria-label="Действия с сотрудниками">
 								<Button
 										size="compact"
-										variant="soft"
+										variant="ginger"
 										active={editor.mode === "create"}
-										onClick={() => setEditor({mode: "create", id: ""})}
+										onClick={() => setEditor({mode: "create", id: null})}
 								>
 										<Plus size={15}/> Добавить сотрудника
 								</Button>
-								<Button
-										size="compact"
-										variant="soft"
-										active={editor.mode === "edit"}
-										onClick={() => setEditor({mode: "edit", id: ""})}
-								>
-										<UserRound size={15}/> Изменить по ID
-								</Button>
-						</div>
-						<EmployeeForm
-								key={`${editor.mode}:${editor.id}`}
-								mode={editor.mode}
-								userId={editor.id}
-								selfId={user.id}
-								onSaved={saved}
-						/>
+						</header>
+
+						<RequestState pending={isPending} error={error} onRetry={refetch} isFetching={isFetching}/>
+
+						{data && !error && (data.items.length ? (
+								<div className={clsx(s.tableWrap, s.responsiveWrap, isPlaceholderData && s.dimmed)} aria-busy={isFetching}>
+										<table className={clsx(s.table, s.responsiveTable)}>
+												<thead>
+												<tr>
+														<th scope="col">Сотрудник</th>
+														<th scope="col">Роль</th>
+														<th scope="col">Доступ</th>
+														<th scope="col">Действия</th>
+												</tr>
+												</thead>
+												<tbody>
+												{data.items.map((employee) => (
+														<tr key={employee.id}>
+																<td>
+																		<span className={s.name}>
+																				{employee.name}
+																				{employee.id === user.id ? " (вы)" : ""}
+																		</span>
+																		<span className={s.subline}>{employee.login}</span>
+																</td>
+																<td data-label="Роль">{employee.role === "admin" ? "Администратор" : "Менеджер"}</td>
+																<td data-label="Доступ">
+																		<Badge variant={employee.is_active ? "in_stock" : "out_of_stock"}>
+																				{employee.is_active ? "Активен" : "Отключён"}
+																		</Badge>
+																</td>
+																<td>
+																		<Button
+																				size="compact"
+																				variant="soft"
+																				active={editor.mode === "edit" && editor.id === employee.id}
+																				onClick={() => setEditor({mode: "edit", id: employee.id})}
+																		>
+																				<Pencil size={14}/> Изменить
+																		</Button>
+																</td>
+														</tr>
+												))}
+												</tbody>
+										</table>
+								</div>
+						) : (
+								<EmptyState>
+										<Title level={3}>Сотрудников пока нет</Title>
+								</EmptyState>
+						))}
+
+						{data && <Pagination page={page} total={data.total} onChange={setPage} pending={isFetching}/>}
+
+						{(editor.mode === "create" || editor.id) && (
+								<EmployeeForm
+										key={`${editor.mode}:${editor.id ?? "new"}`}
+										mode={editor.mode}
+										employeeId={editor.id}
+										selfId={user.id}
+										onSaved={saved}
+								/>
+						)}
 				</div>
 		);
 }

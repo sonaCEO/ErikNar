@@ -2,9 +2,10 @@ import {useEffect, useRef, useState} from "react";
 import {ImagePlus, Pencil, Star, Trash2} from "lucide-react";
 import {toast} from "sonner";
 import {deleteProductMedia, updateProductMedia, uploadProductMedia} from "../../../api/admin/catalog";
-import {useCatalogMutation, useProductMedia} from "../../../hooks/queries/use-admin-catalog";
+import {useAdminVariants, useCatalogMutation, useCatalogOptions, useProductMedia} from "../../../hooks/queries/use-admin-catalog";
 import {Button} from "../../../components/ui/button/button";
 import {Input} from "../../../components/ui/input/input";
+import {Select} from "../../../components/ui/select/select";
 import {Title} from "../../../components/ui/typography/title/title";
 import {AdminDialog, ConfirmDialog, EmptyState, FormError, RequestState} from "../admin-ui";
 import {
@@ -12,7 +13,6 @@ import {
 		orderToPosition,
 		positionToOrder,
 		sameMediaScope,
-		UUID_PATTERN,
 		validateImage,
 } from "./product-form";
 import s from "../admin.module.css";
@@ -94,9 +94,29 @@ function MediaEditor({media, onClose, mutation}) {
 		);
 }
 
+function variantLabel(variant) {
+		return `${variant.sku} · ${variant.width_mm} × ${variant.height_mm} мм`;
+}
+
+function mediaScopeLabel(item, variants, colors) {
+		if (item.variant_id) {
+				const variant = variants.find((entry) => entry.id === item.variant_id);
+				return variant ? `Комплектация: ${variantLabel(variant)}` : "Комплектация";
+		}
+		if (item.body_color_id) {
+				const color = colors.find((entry) => entry.id === item.body_color_id);
+				return color ? `Цвет: ${color.name}` : "Цвет корпуса";
+		}
+		return "Общее фото товара";
+}
+
 export function ProductMedia({product}) {
 		const query = useProductMedia(product.id);
+		const variantsQuery = useAdminVariants(product.id);
+		const catalog = useCatalogOptions();
 		const media = query.data ?? [];
+		const variants = variantsQuery.data ?? [];
+		const colors = catalog.options.body_color.filter((color) => color.is_active !== false);
 		const [file, setFile] = useState(null);
 		const [preview, setPreview] = useState("");
 		const [draft, setDraft] = useState({alt_text: "", sort_order: 1, variant_id: "", body_color_id: ""});
@@ -113,7 +133,7 @@ export function ProductMedia({product}) {
 								values.is_primary &&
 								media.find((item) => item.id !== target.id && item.is_primary && sameMediaScope(item, target));
 						let demoted;
-						// The API's unique index requires clearing the previous primary first.
+
 						if (previous)
 								demoted = await updateProductMedia(previous.id, {
 										is_primary: false,
@@ -171,8 +191,8 @@ export function ProductMedia({product}) {
 						body.append("alt_text", draft.alt_text.trim());
 						body.append("sort_order", String(positionToOrder(draft.sort_order)));
 						body.append("is_primary", String(primary ?? media.length === 0));
-						for (const field of ["variant_id", "body_color_id"])
-								if (draft[field].trim()) body.append(field, draft[field].trim());
+						if (draft.variant_id) body.append("variant_id", draft.variant_id);
+						else if (draft.body_color_id) body.append("body_color_id", draft.body_color_id);
 						await upload.mutateAsync(body);
 						setFile(null);
 						setPreview("");
@@ -230,29 +250,44 @@ export function ProductMedia({product}) {
 														</label>
 												</div>
 												{preview && <img className={p.preview} src={preview} alt="Предпросмотр выбранного файла"/>}
-												<details className={p.advanced}>
-														<summary>Привязка к комплектации или цвету</summary>
-														<div className={s.grid}>
-																<Input
-																		compact
-																		label="ID комплектации (необязательно)"
-																		pattern={UUID_PATTERN}
-																		value={draft.variant_id}
-																		onChange={(event) => setDraft({...draft, variant_id: event.target.value})}
-																/>
-																<Input
-																		compact
-																		label="ID цвета корпуса (необязательно)"
-																		pattern={UUID_PATTERN}
-																		value={draft.body_color_id}
-																		onChange={(event) => setDraft({...draft, body_color_id: event.target.value})}
-																/>
-														</div>
-														<p className={s.hint}>
-																Без привязки фото будет общим для товара. Привязки уже загруженного фото изменить
-																нельзя.
-														</p>
-												</details>
+												<div className={s.grid}>
+														<Select
+																compact
+																label="Комплектация"
+																value={draft.variant_id}
+																onChange={(event) => setDraft({
+																		...draft,
+																		variant_id: event.target.value,
+																		body_color_id: event.target.value ? "" : draft.body_color_id,
+																})}
+														>
+																<option value="">Общее фото товара</option>
+																{variants.map((variant) => (
+																		<option key={variant.id} value={variant.id}>
+																				{variantLabel(variant)}
+																		</option>
+																))}
+														</Select>
+														<Select
+																compact
+																label="Цвет корпуса"
+																value={draft.body_color_id}
+																disabled={Boolean(draft.variant_id)}
+																onChange={(event) => setDraft({...draft, body_color_id: event.target.value})}
+														>
+																<option value="">Любой цвет</option>
+																{colors.map((color) => (
+																		<option key={color.id} value={color.id}>
+																				{color.name}
+																		</option>
+																))}
+														</Select>
+												</div>
+												<p className={s.hint}>
+														{draft.variant_id
+																? "Фото откроется только у выбранной комплектации. Привязку потом изменить нельзя."
+																: "Без комплектации фото общее для товара. Цвет сужает его до этого покрытия. Привязку потом изменить нельзя."}
+												</p>
 										</fieldset>
 										<FormError error={error}/>
 										<div className={s.sectionHeader}>
@@ -300,13 +335,7 @@ export function ProductMedia({product}) {
 																						)}
 																				</div>
 																				<p>{item.alt_text || "Без описания"}</p>
-																				<p className={s.hint}>
-																						{item.variant_id
-																								? `Комплектация: ${item.variant_id}`
-																								: item.body_color_id
-																										? `Цвет: ${item.body_color_id}`
-																										: "Общее фото товара"}
-																				</p>
+																				<p className={s.hint}>{mediaScopeLabel(item, variants, catalog.options.body_color)}</p>
 																				{!product.archived_at && (
 																						<div className={s.actions}>
 																								<Button size="compact" variant="soft" disabled={busy}

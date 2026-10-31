@@ -7,7 +7,17 @@ export const queryKeys = {
 		adminProducts: (page) => ["admin", "catalog", "products", page],
 		adminProduct: (id) => ["admin", "catalog", "product", id],
 		adminMedia: (id) => ["admin", "catalog", "media", id],
-		adminVariants: (id) => ["admin", "catalog", "session-variants", id],
-		adminOptions: ["admin", "catalog", "session-options"],
-		adminEmployees: ["admin", "session-employees"],
+		adminVariants: (productId) => ["admin", "catalog", "variants", productId],
+		adminBodyColors: ["admin", "catalog", "body-colors"],
+		adminPanelColors: ["admin", "catalog", "panel-colors"],
+		adminControlTypes: ["admin", "catalog", "control-types"],
+		adminUsers: (page) => ["admin", "users", "page", page],
+		adminUsersAll: ["admin", "users", "all"],
+		adminUser: (id) => ["admin", "users", "detail", id],
+};
+
+export const catalogOptionQueryKeys = {
+		body_color: queryKeys.adminBodyColors,
+		panel_color: queryKeys.adminPanelColors,
+		control_type: queryKeys.adminControlTypes,
 };

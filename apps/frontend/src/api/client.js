@@ -76,6 +76,21 @@ export async function apiFetch(path, {
 		return response.json();
 }
 
+export async function fetchAllPages(path, {signal, pageSize = 100} = {}) {
+		const first = await apiFetch(`${path}${toQueryString({page: 1, page_size: pageSize})}`, {signal});
+		const items = [...first.items];
+		const size = first.page_size || pageSize;
+		const pageCount = size > 0 ? Math.ceil(first.total / size) : 1;
+		if (pageCount <= 1) return items;
+
+		const rest = await Promise.all(
+				Array.from({length: pageCount - 1}, (_, index) =>
+						apiFetch(`${path}${toQueryString({page: index + 2, page_size: pageSize})}`, {signal}),
+				),
+		);
+		return items.concat(...rest.map((page) => page.items));
+}
+
 export function toQueryString(params) {
 		const search = new URLSearchParams();
 		for (const [key, value] of Object.entries(params)) {

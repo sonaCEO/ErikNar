@@ -1,8 +1,7 @@
-import {apiFetch} from "./client";
+import {apiFetch, fetchAllPages} from "./client";
 
-export async function getProducts(signal) {
-		const page = await apiFetch("/catalog/products", {signal});
-		return page.items;
+export function getProducts(signal) {
+		return fetchAllPages("/catalog/products", {signal});
 }
 
 export function getProduct(slug, signal) {
