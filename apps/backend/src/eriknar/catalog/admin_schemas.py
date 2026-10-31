@@ -1,13 +1,18 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from eriknar.catalog.enums import AvailabilityStatus
 
 
 class CreateProductCommand(BaseModel):
-    slug: str = Field(min_length=1, max_length=120)
+    slug: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=120,
+        description="Адрес товара. Если не указан, генерируется автоматически из названия.",
+    )
     name: str = Field(min_length=1, max_length=200)
     model_code: str = Field(min_length=1, max_length=80)
     category: str = Field(min_length=1, max_length=80)
@@ -38,6 +43,7 @@ class UpdateProductCommand(BaseModel):
 class AdminProductView(CreateProductCommand):
     model_config = ConfigDict(from_attributes=True)
 
+    slug: str
     id: UUID
     archived_at: datetime | None
     created_at: datetime
@@ -53,6 +59,39 @@ class ProductPage(BaseModel):
 
 class ArchiveProductCommand(BaseModel):
     expected_updated_at: datetime
+
+
+class ReferenceRefCommand(BaseModel):
+    """Reuse an existing reference row by `id`, or create a new one from `name`."""
+
+    id: UUID | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    slug: str | None = Field(default=None, min_length=1, max_length=80)
+    hex_value: str | None = Field(default=None, pattern=r"^#[0-9A-Fa-f]{6}$")
+    description: str = ""
+
+    @model_validator(mode="after")
+    def require_id_or_name(self) -> "ReferenceRefCommand":
+        if self.id is None and not self.name:
+            raise ValueError("укажите id существующего значения или name для нового")
+        return self
+
+
+class CreateProductVariantInput(BaseModel):
+    sku: str = Field(min_length=1, max_length=120)
+    width_mm: int = Field(gt=0)
+    height_mm: int = Field(gt=0)
+    body_color: ReferenceRefCommand
+    panel_color: ReferenceRefCommand
+    control_type: ReferenceRefCommand
+    price_minor: int = Field(ge=0)
+    currency: str = Field(default="RUB", pattern=r"^[A-Z]{3}$")
+    availability_status: AvailabilityStatus = AvailabilityStatus.IN_STOCK
+    is_active: bool = True
+
+
+class CreateProductWithVariantsCommand(CreateProductCommand):
+    variants: list[CreateProductVariantInput] = Field(default_factory=list)
 
 
 class CreateBodyColorCommand(BaseModel):
@@ -116,3 +155,7 @@ class AdminVariantView(CreateVariantCommand):
     id: UUID
     created_at: datetime
     updated_at: datetime
+
+
+class CreatedProductView(AdminProductView):
+    variants: list[AdminVariantView] = Field(default_factory=list)
