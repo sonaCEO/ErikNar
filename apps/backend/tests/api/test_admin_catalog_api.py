@@ -115,6 +115,37 @@ async def test_manager_cannot_edit_catalog(migrated_postgres_url: str) -> None:
 
 
 @pytest.mark.anyio
+async def test_admin_creates_product_with_variants_in_one_request(
+    migrated_postgres_url: str,
+) -> None:
+    client, engine = await _client(migrated_postgres_url, UserRole.ADMIN)
+    payload = _product()
+    del payload["slug"]
+    payload["variants"] = [
+        {
+            "sku": "ER-B-800-500-BLACK-BUTTON",
+            "width_mm": 500,
+            "height_mm": 800,
+            "body_color": {"name": "Чёрный матовый", "hex_value": "#202020"},
+            "panel_color": {"name": "Чёрный"},
+            "control_type": {"name": "Кнопочное"},
+            "price_minor": 1_260_000,
+        }
+    ]
+
+    created = await client.post("/api/v1/admin/catalog/products", json=payload)
+
+    assert created.status_code == 201
+    body = created.json()
+    assert body["slug"] == "lesenka"
+    assert len(body["variants"]) == 1
+    assert body["variants"][0]["sku"] == "ER-B-800-500-BLACK-BUTTON"
+    assert body["variants"][0]["updated_at"] is not None
+    await client.aclose()
+    await engine.dispose()
+
+
+@pytest.mark.anyio
 async def test_admin_reads_reference_data_with_updated_at(migrated_postgres_url: str) -> None:
     client, engine = await _client(migrated_postgres_url, UserRole.ADMIN)
     body_color = await client.post(

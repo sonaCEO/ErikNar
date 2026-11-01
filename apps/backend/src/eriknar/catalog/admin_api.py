@@ -12,8 +12,9 @@ from eriknar.catalog.admin_schemas import (
     ControlTypeAdminView,
     CreateBodyColorCommand,
     CreateControlTypeCommand,
+    CreatedProductView,
     CreatePanelColorCommand,
-    CreateProductCommand,
+    CreateProductWithVariantsCommand,
     CreateVariantCommand,
     ProductPage,
     ReferenceView,
@@ -38,10 +39,10 @@ Admin = Annotated[User, Depends(require_admin)]
 Service = Annotated[AdminCatalogService, Depends(get_admin_catalog_service)]
 
 
-@router.post("/products", response_model=AdminProductView, status_code=201)
+@router.post("/products", response_model=CreatedProductView, status_code=201)
 async def create_product(
-    payload: CreateProductCommand, admin: Admin, service: Service
-) -> AdminProductView:
+    payload: CreateProductWithVariantsCommand, admin: Admin, service: Service
+) -> CreatedProductView:
     del admin
     return await service.create_product(payload)
 
