@@ -5,7 +5,7 @@ from eriknar.catalog.admin_schemas import (
     CreateBodyColorCommand,
     CreateControlTypeCommand,
     CreatePanelColorCommand,
-    CreateProductCommand,
+    CreateProductWithVariantsCommand,
     CreateVariantCommand,
 )
 from eriknar.catalog.admin_service import AdminCatalogService, CatalogConflictError
@@ -21,7 +21,7 @@ async def test_variant_requires_existing_references_and_unique_sku(
     async with factory() as session:
         service = AdminCatalogService(session)
         product = await service.create_product(
-            CreateProductCommand(
+            CreateProductWithVariantsCommand(
                 slug="slim",
                 name="Slim",
                 model_code="C",
