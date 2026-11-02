@@ -1,3 +1,4 @@
+import {useMemo} from "react";
 import {keepPreviousData, skipToken, useMutation, useQueries, useQuery, useQueryClient} from "@tanstack/react-query";
 import {
 		fetchAdminProduct,
@@ -39,7 +40,7 @@ export function useAdminProduct(id) {
 export function useProductMedia(id) {
 		return useQuery({
 				queryKey: queryKeys.adminMedia(id),
-				queryFn: ({signal}) => fetchProductMedia(id, signal),
+				queryFn: id ? ({signal}) => fetchProductMedia(id, signal) : skipToken,
 		});
 }
 
@@ -57,10 +58,14 @@ export function useCatalogOptions() {
 						queryFn: ({signal}) => item.queryFn(signal),
 				})),
 		});
-		const options = {body_color: [], panel_color: [], control_type: []};
-		catalogOptionQueries.forEach((item, index) => {
-				options[item.type] = [...(queries[index].data ?? [])].sort(byName);
-		});
+		const bodyColors = queries[0]?.data;
+		const panelColors = queries[1]?.data;
+		const controlTypes = queries[2]?.data;
+		const options = useMemo(() => ({
+				body_color: [...(bodyColors ?? [])].sort(byName),
+				panel_color: [...(panelColors ?? [])].sort(byName),
+				control_type: [...(controlTypes ?? [])].sort(byName),
+		}), [bodyColors, panelColors, controlTypes]);
 		return {
 				options,
 				isPending: queries.some((query) => query.isPending),
